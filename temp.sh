@@ -1,22 +1,35 @@
 #!/bin/bash
-
+# ver. 3
+# Constants
 LOOP=""
-nvidia-settings -a "[gpu:0]/GPUFanControlState=1"
-COMMAND="[fan:0]/GPUTargetFanSpeed="
+GPU="0"
 NOW_SPEED=30
 
-while [ -z $LOOP ]; do
-	TEMP=`nvidia-settings -q=[gpu:0]/GPUCoreTemp`
+# Commands
+nvidia-settings -a "[gpu:"$GPU"]/GPUFanControlState=1"
+COMMAND="[fan:0]/GPUTargetFanSpeed="
 
-	if [ ${TEMP:53:2} -le "40" ]; then
+
+while [ -z $LOOP ]; do
+	TEMP=`nvidia-settings -q=[gpu:$GPU]/GPUCoreTemp`
+
+	if [ ${TEMP:54:1} == "." ]; then
+		TEMP=${TEMP:53:1}
+	elif [ ${TEMP:55:1} == "." ]; then
+		TEMP=${TEMP:53:2}
+	else
+		TEMP=${TEMP:53:3}
+	fi
+
+	if [ $TEMP -le "40" ]; then
 		SPEED=40
-	elif [ ${TEMP:53:2} -le "45" ]; then
+	elif [ $TEMP -le "45" ]; then
 		SPEED=55
-	elif [ ${TEMP:53:2} -le "50" ]; then
+	elif [ $TEMP -le "50" ]; then
 		SPEED=70
-	elif [ ${TEMP:53:2} -le "55" ]; then
+	elif [ $TEMP -le "55" ]; then
 		SPEED=80
-	elif [ ${TEMP:53:2} -le "60" ]; then
+	elif [ $TEMP -le "60" ]; then
 		SPEED=90
 	else
 		SPEED=100
