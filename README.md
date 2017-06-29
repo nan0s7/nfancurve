@@ -1,9 +1,9 @@
 # nfancurve
 Small bash script for using a custom fan curve in Linux for those with an Nvidia GPU.
 
-The current version of the script is version 3.
+The current version of the script is version 4.
 
-This script works for tempurature values in the range 0 < temp < 999, and is currently set up for Celsius. However, it can easily be modified for other scales.
+This script works for tempurature values in the range 0:999, and is currently set up for Celsius. However, it can easily be modified for other scales.
 
 TODO:
 - [DONE] add more error checking when getting the current GPU temperature
