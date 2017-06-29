@@ -1,5 +1,9 @@
 # nfancurve
-Small bash script for using a custom fan curve in Linux for those with an Nvidia GPU.
+A small and lightweight bash script for using a custom fan curve in Linux for those with an Nvidia GPU.
+
+GOALS:
+You are probably wondering why I have chosen to write this script in Bash. The reason is very simple; I wanted a script with the minimum number of dependencies possible. I do take the assumption that your Linux installation has some version of Bash installed. I also assume that you have the Nvidia drivers installed on your machine.
+This is also supposed to be quite lightweight. The last thing I want on my computer are more bulky applications that are a jack of all trades, but a master of none.
 
 The current version of the script is version 4.
 
