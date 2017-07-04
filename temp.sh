@@ -1,24 +1,32 @@
 #!/bin/bash
-echo "~~ nan0s7's fan control script [version 5 ] ~~"
+echo "~~ nan0s7's fan-speed curve script [version 6] ~~"
 
 # -- notes --
-# speeds are in percentages
+# + speed is a percentage value; or { 0..100 }
+# + you can extend/shorten the curve array as you like
+# + may want to set curve array in ascendingly (low to high)
+# + it works via less-than logic; ie. by default 40<temp<=45 is speed=50
 
 # Variables
 LOOP=""
 GPU="0"
-NOW_SPEED="30"
-SPEED="0"
+OLD_SPEED="0"
+SPEED="30"
 
-# Calculate PC's hostname length
+# The actual fan curve array; ["TEMP"]="FAN_SPEED_PERCENTAGE"
+declare -a CURVE=( ["40"]="40" ["45"]="50" ["50"]="60" ["55"]="70" ["60"]="85" ["70"]="100" )
+
+# Calculate PC's hostname length upon first run
 PC=`nvidia-settings -q=[gpu:"$GPU"]/GPUCoreTemp`
-for i in {28..50}; do
+for (( i=1; i<=${#PC}; i++ )) do
 	if [ "${PC:i:2}" == ":0" ]; then
-		PC="${PC:28:$[i - 28]}"
+		PC="${PC:28:$[ i - 28 ]}"
+		PC="${#PC}"
 		break
 	fi
 done
-NUM=$[28 + ${#PC} + 12]
+# The number of characters to the actual temp value
+NUM=$[ 28 + ${PC} + 12 ]
 
 # Enable fan control
 nvidia-settings -a "[gpu:""$GPU""]/GPUFanControlState=1"
@@ -36,29 +44,20 @@ while [ -z "$LOOP" ]; do
 		TEMP="${TEMP:$NUM:3}"
 	fi
 
-	# You can edit these values if you like
-	if [ "$TEMP" -le "40" ]; then
-		SPEED="40"
-	elif [ "$TEMP" -le "45" ]; then
-		SPEED="55"
-	elif [ "$TEMP" -le "50" ]; then
-		SPEED="70"
-	elif [ "$TEMP" -le "55" ]; then
-		SPEED="80"
-	elif [ "$TEMP" -le "60" ]; then
-		SPEED="90"
-	elif [ "$TEMP" -gt "60" ]; then
-		SPEED="100"
-	else
-		SPEED="40"
-	fi
+	# Execution of fan curve
+	for VAL in "${!CURVE[@]}"; do
+		if [ "$TEMP" -le "$VAL" ]; then
+			SPEED="${CURVE[$VAL]}"
+			break
+		fi
+	done
 
 	# Changes the fan speed
-	if [ "$SPEED" -ne "$NOW_SPEED" ]; then
+	if [ "$SPEED" -ne "$OLD_SPEED" ]; then
 	    nvidia-settings -a "[fan:0]/GPUTargetFanSpeed=""$SPEED"
-        NOW_SPEED="$SPEED"
+		OLD_SPEED=$SPEED
 	fi
 
 	# If you're worried about power usage increase this
-	sleep 2
+	sleep 3
 done
