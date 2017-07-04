@@ -12,6 +12,8 @@ The current version of the script is **version 6.**
 
 This script works for tempurature values in the range 0:999, and is currently set up for Celsius. However, it can easily be modified for other scales.
 
+If you need any help configuring my script or don't know how to make it start automatically check the USAGE.md file.
+
 ## Features
 - by default it has an aggressive fan curve profile (lower temps, louder noise)
 - only checks the GPU temp every 3 seconds (by default)
@@ -26,5 +28,6 @@ This script works for tempurature values in the range 0:999, and is currently se
 - ~~add more error checking when getting the current GPU temperature~~
 - ~~weird unary error on some computers~~
 - re-write if statements as for loops
+- add in a more detailed guide of how the script works
 - (this may need to be a separate script) make sure that "CoolBits" is enabled
 - possibly check the currently installed driver version (earlier versions used a different GPUTargetFanSpeed command)
