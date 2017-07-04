@@ -20,6 +20,7 @@ I've taken the (very small amount of) time to include a partially-completed .des
 So if you put my script in your home folder, and lets say your user name/account name is "foo", your "Path" and "Exec" lines would go as follows:
 - `Path=/home/foo/`
 - `Exec=/home/foo/temp.sh`
+
 If your user name/account name is not "foo" then you can change that to what it actually is.
 
 Now the .desktop file should now read as follows:
