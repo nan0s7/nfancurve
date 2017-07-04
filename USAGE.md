@@ -4,7 +4,7 @@ So you want to use my script, huh? Well lucky for you it's pretty easy. But befo
 
 **Questions:**
 1. Do you have an Nvidia graphics card installed in your computer?
-2. Do you have Bash (version 3 and above) and the latest nvidia-glx driver installed on your system?
+2. Do you have Bash (version 4 and above) and the latest nvidia-glx driver installed on your system?
 3. Do you want to use this script part-time? Or would you prefer it be always running in the background?
 4. Did you want to change the default script values?
 
