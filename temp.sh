@@ -26,7 +26,7 @@ for (( i=1; i<=${#PC}; i++ )) do
 	fi
 done
 # The number of characters to the actual temp value
-NUM=$[ 28 + ${PC} + 12 ]
+NUM=$[ 28 + "${PC}" + 12 ]
 
 # Enable fan control
 nvidia-settings -a "[gpu:""$GPU""]/GPUFanControlState=1"
@@ -55,7 +55,7 @@ while [ -z "$LOOP" ]; do
 	# Changes the fan speed
 	if [ "$SPEED" -ne "$OLD_SPEED" ]; then
 	    nvidia-settings -a "[fan:0]/GPUTargetFanSpeed=""$SPEED"
-		OLD_SPEED=$SPEED
+		OLD_SPEED="$SPEED"
 	fi
 
 	# If you're worried about power usage increase this
