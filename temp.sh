@@ -26,7 +26,7 @@ for (( i=1; i<=${#PC}; i++ )) do
 	fi
 done
 # The number of characters to the actual temp value
-NUM=$[ 28 + "${PC}" + 12 ]
+NUM=$[ 28 + ${PC} + 12 ]
 
 # Enable fan control
 nvidia-settings -a "[gpu:""$GPU""]/GPUFanControlState=1"
