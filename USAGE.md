@@ -10,8 +10,8 @@ So you want to use my script, huh? Well lucky for you it's pretty easy. But befo
 
 **Answers:**
 1. Well you're probably looking in the wrong place. Sorry... D:
-2. Most Linux distributions have them in the repositories. Go have a look. If you don't know where bash is, it is probably your default Terminal shell. Open your **f**avourite **T**erminal **a**pplication or **e**mulator (**ftae**) and type "bash --version" without the quotation marks.
-3. See "automating this script" below if you want it always running in the background. If you want to use it whenever you want, you can just run the script by typing "./temp.sh" into your **ftae** when you're in the directory you've put my script. If you literally just downloaded it it'll be in your Downloads folder... duh!
+2. Most Linux distributions have them in the repositories. Go have a look. If you don't know where bash is, it is probably your default Terminal shell. Open your **F**avourite **T**erminal **A**pplication or **E**mulator (**FTAE**) and type "bash --version" without the quotation marks.
+3. See "automating this script" below if you want it always running in the background. If you want to use it whenever you want, you can just run the script by typing "./temp.sh" into your **FTAE** when you're in the directory you've put my script. If you literally just downloaded it it'll be in your Downloads folder... duh!
 4. I'd like to consider my script as being well-commented so if you're game then jump right in by opening my script in your favourite text editor. In particular you may want to have a look at the line that defines the "CURVE" variable (I'm assuming you're using at least version 6 of my script); where in the following example, a is the desired temperature you'd like the upper bound to be for changing the fan speed, and b is the fan-speed-percentage you want the fans to be running at: `["a"]="b"`. Also, I've written the script in such a way that you can have as many tempurature and fan-speed-percentage pairs as you like; just make sure they're all seperated by a space.
 
 ## automating this script
