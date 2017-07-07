@@ -36,6 +36,7 @@ while [ -z "$LOOP" ]; do
 	    nvidia-settings -a "[fan:0]/GPUTargetFanSpeed=""$SPEED"
 		OLD_SPEED="$SPEED"
 	fi
+	TEMP=""
 
 	# If you're worried about power usage increase this
 	sleep 3
