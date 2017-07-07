@@ -25,10 +25,10 @@ If you need any help configuring my script or don't know how to make it start au
 - v6 now supports easy to change fan speeds and other cool stuff
 
 ## Stats
-- **v4** over 4.5h up-time: 0:03.88 CPU time & 672 KiB memory used
-- **v7** around 5h: 0:03.22 CPU time, 118MiB virtual memory
+- **v4** over 4.5h up-time: 0:03.88 CPU time & 672KiB memory used
+- **v7** around 5h: 0:03.22 CPU time, 118MiB virtual memory, 780KiB memory used
 
-### TODO
+**TODO:**
 - ~~add more error checking when getting the current GPU temperature~~
 - ~~weird unary error on some computers~~
 - re-write if statements as for loops
