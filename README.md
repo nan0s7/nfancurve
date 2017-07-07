@@ -20,11 +20,15 @@ If you need any help configuring my script or don't know how to make it start au
 - automatically enables GPU fan control
 - uses "nvidia-settings" commands
 - easy to read code
-- very lightweight; over 4.5h up-time: 0:03.88 CPU time & 672 KiB RAM used (tested with v4)
+- very lightweight; check stats section for more info
 - now works for any PC hostname
 - v6 now supports easy to change fan speeds and other cool stuff
 
-## TODO
+## Stats
+- **v4** over 4.5h up-time: 0:03.88 CPU time & 672 KiB memory used
+- **v7** around 5h: 0:03.22 CPU time, 118MiB virtual memory
+
+### TODO
 - ~~add more error checking when getting the current GPU temperature~~
 - ~~weird unary error on some computers~~
 - re-write if statements as for loops
