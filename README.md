@@ -27,6 +27,8 @@ If you need any help configuring my script or don't know how to make it start au
 ## Stats
 - **v4** over 4.5h up-time: 0:03.88 CPU time & 672KiB memory used
 - **v7** around 5h: 0:03.22 CPU time, 118MiB virtual memory, 780KiB memory used
+These statistics should be taken with a grain of salt of course. My daily usage is usually with a bazillion tabs open in Firefox and many, many windows from various programs. I do game as well, but not usually intensive games (in Linux). These are taken from either the GNOME System Monitor or htop, and only take into account the script itself - measuring the Nvidia commands the script calls is mostly impractical and not needed. Also, I'm advertising this particular scripts' performance, not the performance of proprietary software. Additionally, my current CPU for measuring these stats is an i7 6700K @ 4.5GHz.
+
 
 **TODO:**
 - ~~add more error checking when getting the current GPU temperature~~
