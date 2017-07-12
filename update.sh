@@ -9,6 +9,8 @@ if ! [ -z "$verG" ]; then
 	echo $verG
 else
 	echo "Git not found... you should install that and try again"
+	sleep 3
+	exit
 fi
 
 verL=`cat VERSION.txt`
@@ -20,9 +22,12 @@ echo "Latest version of script: "$verR
 
 if [ "$verL" == "$verR" ]; then
 	echo "You are using the most up-to-date version"
+	sleep 4
 else
 	echo "You are using an outdated version"
 	echo "If you don't want to automatically download the latest version, press CTRL+C to quit this script"
 	sleep 3
 	`git clone https://github.com/nan0s7/nfancurve`
 fi
+
+exit
