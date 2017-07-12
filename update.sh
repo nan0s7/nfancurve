@@ -29,9 +29,13 @@ else
 	sleep 3
 	`git clone https://github.com/nan0s7/nfancurve`
 	cd nfancurve
+	echo "Replacing old files"
 	mv -f -t ../ LICENCE README.md temp.desktop temp.sh update.sh USAGE.md VERSION.txt
 	cd ../
+	echo "Removing temporary directory"
 	rm -rf nfancurve
+	echo "Done"
+	echo "Installed version: "`cat VERSION.txt`
 fi
 
 exit
