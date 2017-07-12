@@ -28,6 +28,10 @@ else
 	echo "If you don't want to automatically download the latest version, press CTRL+C to quit this script"
 	sleep 3
 	`git clone https://github.com/nan0s7/nfancurve`
+	cd nfancurve
+	mv -f -t ../ LICENCE README.md temp.desktop temp.sh update.sh USAGE.md VERSION.txt
+	cd ../
+	rm -rf nfancurve
 fi
 
 exit
