@@ -25,10 +25,10 @@ If you need any help configuring my script or don't know how to make it start au
 - v6 now supports easy to change fan speeds and other cool stuff
 
 ## Stats
-- **v4** over 4.5h up-time: 0:03.88 CPU time & 672KiB memory used
-- **v7** around 5h: 0:03.22 CPU time, 118MiB virtual memory, 780KiB memory used
+- **v4** over 4.5h up-time: 0:03.88 CPU time ~~672KiB memory used~~
+- **v7** around 5h: 0:03.22 CPU time, ~~118MiB virtual memory, 780KiB memory used~~
 
-I ended up catching the command I use to get the current temperature in action and these are the stats: 0:00.06 CPU time, 271.8MiB virtual memory, 5.2MiB memory used. I will say this is again quite inaccurate at this scale, and on other times I've caught the process I've seen the statistics vary by a small bit.
+I ended up catching the command I use to get the current temperature in action and these are the stats: 0:00.06 CPU time, 271.8MiB virtual memory, 5.2MiB memory used. I will say this is again quite inaccurate at this scale, and on other times I've caught the process I've seen the statistics vary by a small bit. _Please note memory footprint is so small it's negligible_
 
 These statistics should be taken with a grain of salt of course. My daily usage is usually with a bazillion tabs open in Firefox and many, many windows from various programs. I do game as well, but not usually intensive games (in Linux). These are taken from either the GNOME System Monitor or htop, and only take into account the script itself - measuring the Nvidia commands the script calls is mostly impractical and not needed. Also, I'm advertising this particular scripts' performance, not the performance of proprietary software. Additionally, my current CPU for measuring these stats is an i7 6700K @ 4.5GHz.
 
@@ -36,7 +36,7 @@ These statistics should be taken with a grain of salt of course. My daily usage 
 **TODO:**
 - ~~add more error checking when getting the current GPU temperature~~
 - ~~weird unary error on some computers~~
-- re-write if statements as for loops
-- add in a more detailed guide of how the script works
+- ~~re-write if statements as for loops~~
+- add in a **really** detailed guide of how the script works
 - (this may need to be a separate script) make sure that "CoolBits" is enabled
 - possibly check the currently installed driver version (earlier versions used a different GPUTargetFanSpeed command)
