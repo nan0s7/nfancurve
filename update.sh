@@ -51,6 +51,6 @@ if ! [ -z "$tempPID" ]; then
 fi
 
 # Run the new version of the script
-nohup ./temp.sh &
+nohup ./temp.sh >/dev/null 2>&1 &
 
 exit
