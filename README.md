@@ -32,7 +32,7 @@ If you need any help configuring my script or don't know how to make it start au
 
 I ended up catching the command I use to get the current temperature in action and these are the stats: 0:00.06 CPU time. I will say this is again quite inaccurate at this scale, and on other times I've caught the process I've seen the statistics vary by a small bit. _Please note I've removed the recorded memory footprint because it is so small it's negligible._
 
-These statistics should be taken with a grain of salt of course. My daily usage is usually with a bazillion tabs open in Firefox and many, many windows from various programs. I do game as well, but not usually intensive games (in Linux). These are taken from either the GNOME System Monitor or htop, and only take into account the script itself - measuring the Nvidia commands the script calls is mostly impractical and not needed. Also, I'm advertising this particular scripts' performance, not the performance of proprietary software. Additionally, my current CPU for measuring these stats is an i7 6700K @ 4.5GHz.
+These statistics should be taken with a grain of salt of course. My daily usage is usually with a bazillion tabs open in Firefox and many, many windows from various programs. I do game as well, but not usually intensive games (in Linux). These are taken from either the GNOME System Monitor or htop, and only take into account the script itself - measuring the Nvidia commands the script calls is mostly impractical and not needed. Also, I'm advertising this particular scripts' performance, not the performance of proprietary software. My current CPU for measuring these stats is an i7 6700K @ 4.5GHz.
 
 
 **TODO:**
