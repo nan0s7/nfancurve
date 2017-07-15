@@ -20,10 +20,9 @@ If you need any help configuring my script or don't know how to make it start au
 - only checks the GPU temp every 3 seconds (by default)
 - automatically enables GPU fan control
 - uses "nvidia-settings" commands
-- easy to read code
+- easy to read code, with plentiful comments (beginner friendly)
 - very lightweight; see stats section for more info
 - works for any PC hostname
-- supports easy-to-change fan speeds
 - easy-to-use update script
 
 
