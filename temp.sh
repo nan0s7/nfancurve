@@ -1,5 +1,13 @@
 #!/bin/bash
-echo "~~ nan0s7's fan-speed curve script [version 8] ~~"
+echo "~~ nan0s7's fan-speed curve script ~~"
+
+# Check driver version
+VER=`nvidia-settings -v`
+if [ "${VER:27:3}" -le "304" ]; then
+    echo "You're using an old and unsupported driver, please upgrade it."
+    exit
+fi
+unset VER
 
 # Variables
 GPU="0"
@@ -33,7 +41,9 @@ while true; do
 	if [ "$SPEED" -ne "$OLD_SPEED" ]; then
 		nvidia-settings -a "[fan:0]/GPUTargetFanSpeed=""$SPEED"
 		OLD_SPEED="$SPEED"
+        unset SPEED
 	fi
+    unset TEMP
 
 	# If you're worried about power usage increase this
 	sleep 3
