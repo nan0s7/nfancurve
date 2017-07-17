@@ -41,9 +41,9 @@ while true; do
 	if [ "$SPEED" -ne "$OLD_SPEED" ]; then
 		nvidia-settings -a "[fan:0]/GPUTargetFanSpeed=""$SPEED"
 		OLD_SPEED="$SPEED"
-        unset SPEED
+        	unset SPEED
 	fi
-    unset TEMP
+	unset TEMP
 
 	# If you're worried about power usage increase this
 	sleep 3

@@ -40,6 +40,6 @@ These statistics should be taken with a grain of salt of course. My daily usage 
 - ~~weird unary error on some computers~~
 - ~~re-write if statements as for loops~~
 - ~~make sure that "CoolBits" is enabled~~ - not really the scope of this script
+- ~~possibly check the currently installed driver version (earlier versions used the  GPUCurrentFanSpeed command)~~
 - add in a **really** detailed guide of how the script works
-- possibly check the currently installed driver version (earlier versions used the  GPUCurrentFanSpeed command)
 - add nouveau support (once they fix Pascal)
