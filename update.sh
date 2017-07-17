@@ -22,24 +22,26 @@ verR=${verR:(-3)}
 echo "Installed version of script: "$verL
 echo "Latest version of script: "$verR
 
-if [ "$verL" == "$verR" ]; then
+if [ $verL -eq $verR ]; then
 	echo "You are using the most up-to-date version"
-else
+elif [ $verL -lt $verR ]; then
 	echo "You are using an outdated version"
 	echo "If you don't want to automatically download the latest version, press CTRL+C to quit this script"
-	sleep 3
+	sleep 4
 	# Downloads the whole repository to make sure nothing is old
 	`git clone https://github.com/nan0s7/nfancurve`
 	cd nfancurve
 	echo "Replacing old files"
 	# Removes every file
-	mv -f -t ../ LICENCE README.md temp.desktop temp.sh update.sh USAGE.md VERSION.txt
+	mv -f -t ../ LICENCE README.md temp.sh update.sh USAGE.md VERSION.txt
 	cd ../
 	echo "Removing temporary directory"
 	# Deletes leftover folder
 	rm -rf nfancurve
 	echo "Done"
 	echo "Newly installed version: "`cat VERSION.txt`
+else
+    echo "You're using a developer version! =O"
 fi
 
 # Get's the running PID for my script (if it's running)
