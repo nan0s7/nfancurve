@@ -3,13 +3,13 @@ A small and lightweight bash script for using a custom fan curve in Linux for th
 
 **Prerequisites:**
 - Bash version 4 and above, or a bash-like shell with the same commands
-- Latest (or close to) Nvidia GLX Driver
-- Update script requires: systemd and git (it'll check for git)
+- Nvidia GLX Driver version greater than 304
+- Update script requires git (it'll check for it when it's run)
 
-You are probably wondering why I have chosen to write this script in Bash. The reason is very simple; I wanted a script with the minimum number of dependencies possible. I do take the assumption that your Linux installation has some version of Bash installed. I also assume that you have the Nvidia drivers installed on your machine.
+You are probably wondering why I have chosen to write this script in Bash. The reason is very simple; I wanted a script with the minimum number of dependencies possible.
 This is also supposed to be quite lightweight. The last thing I want on my computer are more bulky applications that hog resources and end up being a jack of all trades, but a master of none.
 
-The current version of the script is **version 8.**
+The current version of the script is **version 9.**
 
 This script works for tempurature values in the range 0:999, and is currently set up for Celsius. However, it can easily be modified for other scales.
 
