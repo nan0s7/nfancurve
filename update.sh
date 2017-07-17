@@ -41,7 +41,7 @@ elif [ $verL -lt $verR ]; then
 	echo "Done"
 	echo "Newly installed version: "`cat VERSION.txt`
 else
-    echo "You're using a developer version! =O"
+	echo "You're using a developer version! =O"
 fi
 
 # Get's the running PID for my script (if it's running)
