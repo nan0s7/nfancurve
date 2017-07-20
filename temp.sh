@@ -37,14 +37,11 @@ while true; do
 		done
                 unset VAL
 	fi
-        unset TEMP
 
 	# Changes the fan speed
 	if [ "$SPEED" -ne "$OLD_SPEED" ]; then
 		nvidia-settings -a "[fan:0]/GPUTargetFanSpeed=""$SPEED"
-        	unset OLD_SPEED
 		OLD_SPEED="$SPEED"
-        	unset SPEED
 	fi
 
 	# If you're worried about power usage increase this
