@@ -42,10 +42,10 @@ If you don't know how to set programs to autostart in your distribution of choic
 This is a fairly easy thing to do, and it should become second-nature to you if you plan on using Linux for the long-term. The easiest way to make sure at every boot, CoolBits is always enabled is to make use of the `xorg.conf.d` directory. **You will need root access, though.**
 
 Go to the directory X11 via typing the following command: `cd /etc/X11/`
-If you don't see a file called "xorg.conf" (use the `ls` command), you should open Nvidia Settings for the first time. This will generate one for you. 
-Go into the xorg.conf file with your favourite text editor (mine is **nano**, so I'd type `nano xorg.conf`), and go down to the section that is labelled **Device**. Make sure you know what it says next to "Identifier", in the quotation marks. I've copied what you'll need below; so when you paste it into the file we're going to create, remember to change your _Identifier_ as needed.
+If you don't see a file called `xorg.conf` (use the `ls` command), you should open Nvidia Settings for the first time. This will generate one for you. 
+Go into the `xorg.conf` file with your favourite text editor (mine is **nano**, so I'd type `nano xorg.conf`), and go down to the section that is labelled `"Device"`. Make sure you know what it says next to `Identifier`, in the quotation marks. I've copied what you'll need below; so when you paste it into the file we're going to create, remember to change your `Identifier` as needed.
 
-You can now exit the editor and go back to the Terminal. Now, go into the directory "xorg.conf.d". We're going to make a file, and you can technically call it whatever you like, but personally mine is called _nvidia.conf_ (remember you need to be root in order to be able to save this file). Paste the following lines in this file:
+You can now exit the editor and go back to the Terminal. Now, go into the directory `xorg.conf.d`. We're going to make a file, and you can technically call it whatever you like, but personally mine is called `nvidia.conf` (remember you need to be **root** in order to be able to save this file). Paste the following lines in this file:
 
 ```
 Section "Device"
@@ -58,8 +58,8 @@ EndSection
 # Trail
 ```
 
-And don't forget to change your Identifier!
+And don't forget to change your `Identifier`!
 
-This file will make sure Coolbits is enabled each time your system generates a new xorg.conf file, which is usually whenever you update your graphics drivers (as Nvidia likes to do this).
+This file will make sure `Coolbits` is enabled each time your system generates a new `xorg.conf` file, which is usually whenever you update your graphics drivers (as Nvidia likes to do this).
 
-You can change your Coolbits value (in my case the number _12_) to whatever you need it to be; different values enable different things. Any value above 4 will enable you to control your fan speed manually, and therefore use this script as it's intended. _Remember that Google is your friend._
+You can change your `Coolbits` value (in my case the number `12`) to whatever you need it to be; different values enable different things. Any value above 4 will enable you to control your fan speed manually, and therefore use this script as it's intended. _Remember that Google is your friend._
