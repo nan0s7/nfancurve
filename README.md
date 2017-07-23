@@ -39,7 +39,7 @@ These statistics should be taken with a grain of salt of course. My daily usage 
 - ~~add more error checking when getting the current GPU temperature~~
 - ~~weird unary error on some computers~~
 - ~~re-write if statements as for loops~~
-- ~~make sure that "CoolBits" is enabled~~ - not really the scope of this script
-- ~~possibly check the currently installed driver version (earlier versions used the  GPUCurrentFanSpeed command)~~
+- ~~make sure that "CoolBits" is enabled~~ - _not really the scope of this script_
+- ~~possibly check the currently installed driver version~~ - _earlier versions used the  GPUCurrentFanSpeed command_
 - add in a **really** detailed guide of how the script works
 - add nouveau support (once they fix Pascal)
