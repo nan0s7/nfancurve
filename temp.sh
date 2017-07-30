@@ -11,9 +11,10 @@ unset VER
 
 # Variables
 GPU="0"
-OLD_SPEED="0"
 SPEED="30"
 TEMP="0"
+OLD_TEMP="0"
+SLP=3
 
 # The actual fan curve array; [TEMP_CELSIUS]=FAN_SPEED_PERCENTAGE
 declare -a CURVE=( ["40"]="30" ["45"]="45" ["50"]="60" ["55"]="70" ["60"]="85" )
@@ -25,33 +26,48 @@ while true; do
 	# Current temperature query
 	TEMP=`nvidia-settings -q=[gpu:"$GPU"]/GPUCoreTemp -t`
 
-	# Execution of fan curve
-	if [ "$TEMP" -gt "${CURVE[-1]}" ]; then
-		SPEED="100"
-	else
-		for VAL in "${!CURVE[@]}"; do
-			if [ "$TEMP" -le "$VAL" ]; then
-				SPEED="${CURVE[$VAL]}"
-				break
-			fi
-		done
-                unset VAL
-	fi
+        # Calculate temperature difference
+        OLD_TEMP=$[ $TEMP - $OLD_TEMP ]
 
-	# Changes the fan speed
-	if [ "$SPEED" -ne "$OLD_SPEED" ]; then
-		nvidia-settings -a "[fan:0]/GPUTargetFanSpeed=""$SPEED"
-		OLD_SPEED="$SPEED"
-	fi
+        # Adjust the time between the next reading
+        if [ $OLD_TEMP -ge 5 ]; then
+                SLP=2
+        elif [ $OLD_TEMP -gt 2 ]; then
+                SLP=3
+        elif [ $OLD_TEMP -eq 0 ]; then
+                SLP=4
+        elif [ $OLD_TEMP -lt 0 ]; then
+                SLP=5
+        fi
 
-	# If you're worried about power usage increase this
-	sleep 3
+        if ! [ $OLD_TEMP -gt -5 ]; then
+                # Execution of fan curve
+                if [ "$TEMP" -gt "${CURVE[-1]}" ]; then
+                        SPEED="100"
+                else
+                        for VAL in "${!CURVE[@]}"; do
+                                if [ "$TEMP" -le "$VAL" ]; then
+                                        SPEED="${CURVE[$VAL]}"
+                                        break
+                                fi
+                        done
+                fi
+                # Change the fan speed to the newly calculated one
+                nvidia-settings -a "[fan:0]/GPUTargetFanSpeed=""$SPEED"
+        fi
+
+        # Set this to the old temperature reading
+        OLD_TEMP=$TEMP
+
+	# This will automatically adjust
+	sleep $SLP
 done
 
 # Make sure the variables are back to normal
 unset CURVE
 unset GPU
 unset TEMP
-unset OLD_SPEED
+unset OLD_TEMP
+unset SLP
 unset SPEED
 unset VAL
