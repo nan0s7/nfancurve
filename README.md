@@ -9,7 +9,7 @@ A small and lightweight bash script for using a custom fan curve in Linux for th
 You are probably wondering why I have chosen to write this script in Bash. The reason is very simple; I wanted a script with the minimum number of dependencies possible.
 This is also supposed to be quite lightweight. The last thing I want on my computer are more bulky applications that hog resources and end up being a jack of all trades, but a master of none.
 
-The current version of the script is **version 9.**
+The current version of the script is **version 10.**
 
 This script works for tempurature values in the range 0:999, and is currently set up for Celsius. However, it can easily be modified for other scales.
 
@@ -17,10 +17,10 @@ If you need any help configuring my script or don't know how to make it start au
 
 ## Features
 - by default it has an aggressive fan curve profile (lower temps, louder noise)
-- only checks the GPU temp every 3 seconds (by default)
+- uses `nvidia-settings` commands
 - automatically enables GPU fan control
-- uses "nvidia-settings" commands
 - easy to read code, with plentiful comments (beginner friendly)
+- intelligently adjusts the time between tempurature readings
 - very lightweight; see stats section for more info
 - works for any PC hostname
 - easy-to-use update script
