@@ -11,16 +11,19 @@ unset VER
 
 # Variables
 GPU="0"
-SPEED="30"
+SPEED="25"
 TEMP="0"
 OLD_TEMP="0"
 SLP=3
 
 # The actual fan curve array; [TEMP_CELSIUS]=FAN_SPEED_PERCENTAGE
-declare -a CURVE=( ["40"]="30" ["45"]="45" ["50"]="60" ["55"]="70" ["60"]="85" )
+declare -a CURVE=( ["40"]="25" ["45"]="45" ["50"]="60" ["55"]="70" ["60"]="85" )
 
 # Enable fan control
 nvidia-settings -a "[gpu:""$GPU""]/GPUFanControlState=1"
+
+# Set initial fan speed
+nvidia-settings -a "[fan:0]/GPUTargetFanSpeed=""$SPEED"
 
 while true; do
 	# Current temperature query
