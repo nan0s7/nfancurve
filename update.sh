@@ -4,7 +4,7 @@ echo "~~ nan0s7's fan-speed curve script updater script ~~"
 echo "Checking for installed git version..."
 verG=`git --version`
 
-# Here I'm assuming that the version string format doesn't change much
+# Here I'm assuming that the version string format does not change much
 if [ "${#verG}" -lt "22" ]; then
 	echo "Git found!"
 	echo $verG
