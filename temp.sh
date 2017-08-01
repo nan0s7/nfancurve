@@ -49,11 +49,7 @@ while true; do
         TDIFF=$[ $TEMP - $OLD_TEMP ]
 
         # Adjust the time between the next reading
-        if [ "$TDIFF" -gt "$ERR" ] || [ "$TDIFF" -lt -"$ERR" ]; then
-                SLP=3
-                set_speed
-                OLD_TEMP="$TEMP"
-        elif [ "$TDIFF" -lt "$ER2" ] || [ "$TDIFF" -gt "$ER2" ]; then
+        if [ "$TDIFF" -lt "$ER2" ] && [ "$TDIFF" -gt -"$ER2" ]; then
                 SLP=6
         elif [ "$TDIFF" -gt -"$ERR" ]; then
                 SLP=5
