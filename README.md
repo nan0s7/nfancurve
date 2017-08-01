@@ -6,8 +6,8 @@ A small and lightweight bash script for using a custom fan curve in Linux for th
 - Nvidia GLX Driver version greater than 304
 - Update script requires git (it'll check for it when it's run)
 
-You are probably wondering why I have chosen to write this script in Bash. The reason is very simple; I wanted a script with the minimum number of dependencies possible.
-This is also supposed to be quite lightweight. The last thing I want on my computer are more bulky applications that hog resources and end up being a jack of all trades, but a master of none.
+You are probably wondering why I have chosen to write this script in Bash. The reason is very simple; I wanted a script with the minimum number of dependencies possible. To get this script up-and-running you _technically_ only need the **temp.sh** file.
+The script itself is supposed to be quite lightweight. Although I'm more comfortable with something along the lines of Python, I felt that this was a perfect opportunity to improve on my Bash skills.
 
 The current version of the script is **version 10.**
 
@@ -43,5 +43,6 @@ These statistics should be taken with a grain of salt of course. My daily usage 
 - ~~make sure that "CoolBits" is enabled~~ - _not really the scope of this script_
 - ~~possibly check the currently installed driver version~~ - _earlier versions used the  GPUCurrentFanSpeed command_
 - make code more modular / customisable
+- improve fan curve logic (ie 100%)
 - add in a **really** detailed guide of how the script works
 - add nouveau support (once they fix Pascal)
