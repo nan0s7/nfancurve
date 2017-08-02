@@ -9,15 +9,17 @@ if [ "${VER:27:3}" -le "304" ]; then
 fi
 unset VER
 
-# Variables
+# Variable initialisation
 GPU=0
-SPEED="25"
 TEMP=0
 OLD_TEMP=0
 TDIFF=0
+# Editable variables
+SPEED="25"
 ERR=3
 ER2=$[ $ERR - 2 ]
 SLP=3
+THRESHOLD=70
 
 # The actual fan curve array; [TEMP_CELSIUS]=FAN_SPEED_PERCENTAGE
 declare -a CURVE=( ["35"]="25" ["45"]="40" ["50"]="55" ["55"]="70" ["60"]="85" )
@@ -28,8 +30,7 @@ nvidia-settings -a "[gpu:""$GPU""]/GPUFanControlState=1"
 # This function is the biggest calculation in this script (use it sparingly)
 function set_speed {
         # Execution of fan curve
-        if [ "$TEMP" -gt 70 ]; then
-                # Only go max speed if temp > (last val in curve + 10 degrees)
+        if [ "$TEMP" -gt "$THRESHOLD" ]; then
                 SPEED="100"
         else
                 # Get a new speed from curve
@@ -80,3 +81,4 @@ unset VAL
 unset TDIFF
 unset ERR
 unset ER2
+unset THRESHOLD
