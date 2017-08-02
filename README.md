@@ -29,7 +29,7 @@ If you need any help configuring my script or don't know how to make it start au
 ## Stats
 - **v4** over 4.5h up-time: 0:03.88 CPU time
 - **v7** around 5h: 0:03.22 CPU time
-- **v10** around 5h: 0:01.54 CPU time (although I wasn't doing much)
+- **v10** around 5h: 0:02.42 CPU time
 
 I ended up catching the command I use to get the current temperature in action and these are the stats: 0:00.06 CPU time. I will say this is again quite inaccurate at this scale, and on other times I've caught the process I've seen the statistics vary by a small bit. _Please note I've removed the recorded memory footprint because it is so small it's negligible._
 
