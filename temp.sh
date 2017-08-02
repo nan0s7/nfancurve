@@ -28,7 +28,7 @@ nvidia-settings -a "[gpu:""$GPU""]/GPUFanControlState=1"
 # This function is the biggest calculation in this script (use it sparingly)
 function set_speed {
         # Execution of fan curve
-        if [ "$TEMP" -gt "$[ ${CURVE[-1]} + 10 ]" ]; then
+        if [ "$TEMP" -gt 70 ]; then
                 # Only go max speed if temp > (last val in curve + 10 degrees)
                 SPEED="100"
         else
@@ -44,6 +44,7 @@ function set_speed {
         nvidia-settings -a "[fan:0]/GPUTargetFanSpeed=""$SPEED"
 }
 
+# Anything in this loop will be running in the actual persistant process
 while true; do
 	# Current temperature query
 	TEMP=`nvidia-settings -q=[gpu:"$GPU"]/GPUCoreTemp -t`
@@ -52,9 +53,9 @@ while true; do
         TDIFF=$[ $TEMP - $OLD_TEMP ]
 
         # Adjust the time between the next reading
-        if [ "$TDIFF" -lt "$ER2" ] && [ "$TDIFF" -gt -"$ER2" ]; then
+        if [ "$TDIFF" -le "$ER2" ] && [ "$TDIFF" -ge -"$ER2" ]; then
                 SLP=6
-        elif [ "$TDIFF" -gt -"$ERR" ]; then
+        elif [ "$TDIFF" -le "$ERR" ] && [ "$TDIFF" -ge -"$ERR" ]; then
                 SLP=4
         else
                 SLP=3
