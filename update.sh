@@ -32,8 +32,8 @@ elif [ $verL -lt $verR ]; then
 	`git clone https://github.com/nan0s7/nfancurve`
 	cd nfancurve
 	echo "Replacing old files"
-	# Removes every file
-	mv -f -t ../ LICENCE README.md temp.sh update.sh USAGE.md VERSION.txt
+	# Moves every file into main directory
+	mv -f -t ../ `ls`
 	cd ../
 	echo "Removing temporary directory"
 	# Deletes leftover folder
@@ -44,7 +44,7 @@ else
 	echo "You're using a developer version! =O"
 fi
 
-# Get's the running PID for my script (if it's running)
+# Gets the running PID for my script (if it's running)
 tempPID=`pgrep temp.sh`
 
 # If the outdated script is running, kill it
