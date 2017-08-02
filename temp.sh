@@ -10,9 +10,9 @@ fi
 unset VER
 
 # Variables
-GPU="0"
+GPU=0
 SPEED="25"
-TEMP="0"
+TEMP=0
 OLD_TEMP=0
 TDIFF=0
 ERR=3
@@ -20,16 +20,19 @@ ER2=$[ $ERR - 2 ]
 SLP=3
 
 # The actual fan curve array; [TEMP_CELSIUS]=FAN_SPEED_PERCENTAGE
-declare -a CURVE=( ["40"]="25" ["45"]="45" ["50"]="60" ["55"]="70" ["60"]="85" )
+declare -a CURVE=( ["35"]="25" ["45"]="40" ["50"]="55" ["55"]="70" ["60"]="85" )
 
-# Enable fan control
+# Enable fan control (only works if Coolbits is enabled)
 nvidia-settings -a "[gpu:""$GPU""]/GPUFanControlState=1"
 
+# This function is the biggest calculation in this script (use it sparingly)
 function set_speed {
         # Execution of fan curve
-        if [ "$TEMP" -gt "${CURVE[-1]}" ]; then
+        if [ "$TEMP" -gt "$[ ${CURVE[-1]} + 10 ]" ]; then
+                # Only go max speed if temp > (last val in curve + 10 degrees)
                 SPEED="100"
         else
+                # Get a new speed from curve
                 for VAL in "${!CURVE[@]}"; do
                         if [ "$TEMP" -le "$VAL" ]; then
                                 SPEED="${CURVE[$VAL]}"
@@ -52,10 +55,12 @@ while true; do
         if [ "$TDIFF" -lt "$ER2" ] && [ "$TDIFF" -gt -"$ER2" ]; then
                 SLP=6
         elif [ "$TDIFF" -gt -"$ERR" ]; then
-                SLP=5
+                SLP=4
         else
                 SLP=3
+                # Call set_speed when you want to calc a new speed
                 set_speed
+                # Only need to set old temp when you re-calc speed
                 OLD_TEMP="$TEMP"
         fi
 
