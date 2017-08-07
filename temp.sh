@@ -3,7 +3,8 @@ echo "~~ nan0s7's fan-speed curve script ~~"
 
 # Check driver version
 VER=`nvidia-settings -v`
-if [ "${VER:27:3}" -le "304" ]; then
+# Just a guess... I don't really know the right version
+if [ "${VER:27:3}" -lt "304" ]; then
         echo "You're using an old and unsupported driver, please upgrade it."
         exit
 fi
@@ -14,15 +15,14 @@ GPU=0
 TEMP=0
 OLD_TEMP=0
 TDIFF=0
+SLP=0
 # Editable variables
-SPEED="25"
 ERR=3
 ER2=$[ $ERR - 2 ]
-SLP=3
-THRESHOLD=70
 
-# The actual fan curve array; [TEMP_CELSIUS]=FAN_SPEED_PERCENTAGE
-declare -a CURVE=( ["35"]="25" ["45"]="40" ["50"]="55" ["55"]="70" ["60"]="85" )
+# The actual fan curve array; [FAN_SPEED_PERCENTAGE]=TEMP_CELSIUS
+declare -a CURVE=( ["25"]="35" ["40"]="45" ["55"]="50" ["70"]="55" ["85"]="60" )
+SPEED="${CURVE[0]}"
 
 # Enable fan control (only works if Coolbits is enabled)
 nvidia-settings -a "[gpu:""$GPU""]/GPUFanControlState=1"
@@ -30,13 +30,13 @@ nvidia-settings -a "[gpu:""$GPU""]/GPUFanControlState=1"
 # This function is the biggest calculation in this script (use it sparingly)
 function set_speed {
         # Execution of fan curve
-        if [ "$TEMP" -gt "$THRESHOLD" ]; then
+        if [ "$TEMP" -gt "$[ ${CURVE[-1]} + 10 ]" ]; then
                 SPEED="100"
         else
                 # Get a new speed from curve
                 for VAL in "${!CURVE[@]}"; do
-                        if [ "$TEMP" -le "$VAL" ]; then
-                                SPEED="${CURVE[$VAL]}"
+                        if [ "$TEMP" -le "${CURVE[$VAL]}" ]; then
+                                SPEED="$VAL"
                                 break
                         fi
                 done
@@ -81,4 +81,3 @@ unset VAL
 unset TDIFF
 unset ERR
 unset ER2
-unset THRESHOLD
