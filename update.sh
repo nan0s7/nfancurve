@@ -22,9 +22,9 @@ verR=${verR:(-3)}
 echo "Installed version of script: "$verL
 echo "Latest version of script: "$verR
 
-if [ $verL -eq $verR ]; then
+if [ "$verL" -eq "$verR" ]; then
 	echo "You are using the most up-to-date version"
-elif [ $verL -lt $verR ]; then
+elif [ "$verL" -lt "$verR" ]; then
 	echo "You are using an outdated version"
 	echo "If you don't want to automatically download the latest version, press CTRL+C to quit this script"
 	sleep 4
