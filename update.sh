@@ -1,6 +1,7 @@
 #!/bin/bash
 echo "~~ nan0s7's fan-speed curve script updater script ~~"
 
+# This script is able to run temp.sh in the background for you, btw
 echo "Checking for installed git version..."
 verG=`git --version`
 
@@ -48,7 +49,7 @@ fi
 tempPID=`pgrep temp.sh`
 
 # If the outdated script is running, kill it
-if ! [ -z "$tempPID" ]; then
+if [ "$tempPID" -gt 0 ]; then
 	kill $tempPID
 fi
 

@@ -37,6 +37,7 @@ function set_speed {
                 for VAL in "${!CURVE[@]}"; do
                         if [ "$TEMP" -le "${CURVE[$VAL]}" ]; then
                                 SPEED="$VAL"
+                                # Break to save redundant computation
                                 break
                         fi
                 done
