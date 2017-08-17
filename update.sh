@@ -49,7 +49,7 @@ fi
 tempPID=`pgrep temp.sh`
 
 # If the outdated script is running, kill it
-if [ "$tempPID" -gt 0 ]; then
+if [ -n "$tempPID" ] && [ "$tempPID" -gt 0 ]; then
 	kill $tempPID
 fi
 
