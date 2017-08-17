@@ -67,6 +67,9 @@ while true; do
                 OLD_TEMP="$TEMP"
         fi
 
+        # Uncomment the following line if you want to log stuff
+	# echo "t="$TEMP" ot="$OLD_TEMP" sp="$SPEED" tdif="$TDIFF" slp="$SLP
+
 	# This will automatically adjust
 	sleep "$SLP"
 done
