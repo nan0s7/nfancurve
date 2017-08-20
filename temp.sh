@@ -1,6 +1,27 @@
 #!/bin/bash
 echo "~~ nan0s7's fan speed curve script ~~"
 
+# Just in-case
+function finish {
+	# Make sure the variables are back to normal
+	unset gpu
+	unset temp
+	unset old_temp
+	unset slp
+	unset speed
+	unset i
+	unset tdiff
+	unset clen
+	unset diff_c2
+	unset diff_curve
+	unset tcurve
+	unset fcurve
+	unset eles
+	unset ver
+	unset diffr
+}
+trap finish EXIT
+
 # Check driver version
 ver=`nvidia-settings -v`
 # Just a guess... I don't really know the right version
@@ -92,18 +113,3 @@ while true; do
 	# This will automatically adjust
 	sleep "$slp"
 done
-
-# Make sure the variables are back to normal
-unset gpu
-unset temp
-unset old_temp
-unset slp
-unset speed
-unset i
-unset tdiff
-unset clen
-unset diff_c2
-unset diff_curve
-unset tcurve
-unset fcurve
-unset eles
