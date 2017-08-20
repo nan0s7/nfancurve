@@ -1,87 +1,109 @@
 #!/bin/bash
-echo "~~ nan0s7's fan-speed curve script ~~"
+echo "~~ nan0s7's fan speed curve script ~~"
 
 # Check driver version
-VER=`nvidia-settings -v`
+ver=`nvidia-settings -v`
 # Just a guess... I don't really know the right version
-if [ "${VER:27:3}" -lt "304" ]; then
+if [ "${ver:27:3}" -lt "304" ]; then
         echo "You're using an old and unsupported driver, please upgrade it."
         exit
 fi
-unset VER
+unset ver
 
-# Variable initialisation
-GPU=0
-TEMP=0
-OLD_TEMP=0
-TDIFF=0
-SLP=0
 # Editable variables
-ERR=3
-ER2=$[ $ERR - 2 ]
+declare -a fcurve=( "25" "40" "55" "70" "85" ) # Fan speeds
+declare -a tcurve=( "35" "45" "50" "55" "60" ) # Temperatures
+# ie - when temp<=35 degrees celsius the fan speed=25%
 
-# The actual fan curve array; [FAN_SPEED_PERCENTAGE]=TEMP_CELSIUS
-declare -a CURVE=( ["25"]="35" ["40"]="45" ["55"]="50" ["70"]="55" ["85"]="60" )
-SPEED="${CURVE[0]}"
+# Variable initialisation (so don't change these)
+gpu=0
+temp=0
+old_temp=0
+tdiff=0
+slp=0
+eles=0
+speed=${fcurve[0]}
+clen=$[ ${#fcurve[@]} - 1 ]
+declare -a diff_curve=()
+declare -a diff_c2=()
 
-# Enable fan control (only works if Coolbits is enabled)
-nvidia-settings -a "[gpu:""$GPU""]/GPUFanControlState=1"
+# Enable fan control (only works if Coolbits is enabled), see USAGE.md
+nvidia-settings -a "[gpu:""$gpu""]/GPUFanControlState=1"
+
+# diff curves are the difference in fan-curve temps for better slp changes
+for i in `seq 0 $[ $clen - 1 ]`; do
+	diffr=$[ ${tcurve[$[ $i + 1 ]]} - ${tcurve[$i]} ]
+	diff_curve+=("$diffr")
+	diff_c2+=("$[ $diffr / 2 ]")
+done
+unset diffr
+
+# Cleaner than worrying about if x or y statements imo
+function get_abs_tdiff {
+	if [ "$tdiff" -lt 0 ]; then
+		tdiff=$[ $tdiff - 2 * $tdiff ]
+	fi
+}
 
 # This function is the biggest calculation in this script (use it sparingly)
 function set_speed {
         # Execution of fan curve
-        if [ "$TEMP" -gt "$[ ${CURVE[-1]} + 10 ]" ]; then
-                SPEED="100"
+        if [ "$temp" -gt "$[ ${tcurve[-1]} + 10 ]" ]; then
+                speed="100"
         else
                 # Get a new speed from curve
-                for VAL in "${!CURVE[@]}"; do
-                        if [ "$TEMP" -le "${CURVE[$VAL]}" ]; then
-                                SPEED="$VAL"
-                                # Break to save redundant computation
+                for i in `seq 0 $clen`; do
+                        if [ "$temp" -le "${tcurve[$i]}" ]; then
+                                speed="${fcurve[$i]}"
+				eles=$i
+                                # Break to avoid redundant computation
                                 break
                         fi
                 done
         fi
         # Change the fan speed to the newly calculated one
-        nvidia-settings -a "[fan:0]/GPUTargetFanSpeed=""$SPEED"
+        nvidia-settings -a "[fan:0]/GPUTargetFanSpeed=""$speed"
 }
 
 # Anything in this loop will be running in the actual persistant process
 while true; do
 	# Current temperature query
-	TEMP=`nvidia-settings -q=[gpu:"$GPU"]/GPUCoreTemp -t`
+	temp=`nvidia-settings -q=[gpu:"$gpu"]/GPUCoreTemp -t`
 
-        # Calculate temperature difference
-        TDIFF=$[ $TEMP - $OLD_TEMP ]
+        # Calculate temperature difference & make sure it's positive
+        tdiff=$[ $temp - $old_temp ]
+	get_abs_tdiff
 
-        # Adjust the time between the next reading
-        if [ "$TDIFF" -le "$ER2" ] && [ "$TDIFF" -ge -"$ER2" ]; then
-                SLP=6
-        elif [ "$TDIFF" -le "$ERR" ] && [ "$TDIFF" -ge -"$ERR" ]; then
-                SLP=4
-        else
-                SLP=3
-                # Call set_speed when you want to calc a new speed
-                set_speed
-                # Only need to set old temp when you re-calc speed
-                OLD_TEMP="$TEMP"
-        fi
+	# Better adjustments based on tcurve values
+	if [ "$tdiff" -ge "${diff_curve[$eles]}" ]; then
+		set_speed
+		old_temp="$temp"
+		slp=3
+	elif [ "$tdiff" -ge "${diff_c2[$eles]}" ]; then
+		slp=4
+	else
+		slp=6
+	fi
 
+	# Do `./temp.sh 1>log.txt 2>&1` to log all output
         # Uncomment the following line if you want to log stuff
 	# echo "t="$TEMP" ot="$OLD_TEMP" sp="$SPEED" tdif="$TDIFF" slp="$SLP
 
 	# This will automatically adjust
-	sleep "$SLP"
+	sleep "$slp"
 done
 
 # Make sure the variables are back to normal
-unset CURVE
-unset GPU
-unset TEMP
-unset OLD_TEMP
-unset SLP
-unset SPEED
-unset VAL
-unset TDIFF
-unset ERR
-unset ER2
+unset gpu
+unset temp
+unset old_temp
+unset slp
+unset speed
+unset i
+unset tdiff
+unset clen
+unset diff_c2
+unset diff_curve
+unset tcurve
+unset fcurve
+unset eles
