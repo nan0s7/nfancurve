@@ -9,7 +9,7 @@ A small and lightweight bash script for using a custom fan curve in Linux for th
 You are probably wondering why I have chosen to write this script in Bash. The reason is very simple; I wanted a script with the minimum number of dependencies possible. To get this script up-and-running you _technically_ only need the **temp.sh** file.
 The script itself is supposed to be quite lightweight. Although I'm more comfortable with something along the lines of Python, I felt that this was a perfect opportunity to improve on my Bash skills.
 
-The current version of the script is **version 11.**
+The current version of the script is **version 12.**
 
 This script works for tempurature values in the range 0:999, and is currently set up for Celsius. However, it can easily be modified for other scales.
 
@@ -43,6 +43,6 @@ These statistics should be taken with a grain of salt of course. My daily usage 
 - ~~make sure that "CoolBits" is enabled~~ - _not really the scope of this script_
 - ~~possibly check the currently installed driver version~~ - _earlier versions used the  GPUCurrentFanSpeed command_
 - ~~improve fan curve logic (ie 100%)~~
-- make code more modular / more easily customisable
+- ~~make code more modular / more easily customisable~~
 - add in a **really** detailed guide of how the script works
 - add nouveau support (once they fix Pascal)
