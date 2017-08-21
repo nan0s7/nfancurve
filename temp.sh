@@ -59,6 +59,12 @@ for i in `seq 0 $[ $clen - 1 ]`; do
 done
 unset diffr
 
+# Check that the curves are the same length
+if ! [ ${#fcurve[@]} -eq ${#tcurve[@]} ]; then
+	echo "Your two fan curves don't match up - you should fix that."
+	exit
+fi
+
 # Cleaner than worrying about if x or y statements imo
 function get_abs_tdiff {
 	if [ "$tdiff" -lt 0 ]; then
