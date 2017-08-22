@@ -19,6 +19,7 @@ function finish {
 	unset eles
 	unset ver
 	unset diffr
+	echo "Successfully caught exit & cleared variables!"
 }
 trap finish EXIT
 
@@ -63,6 +64,8 @@ unset diffr
 if ! [ ${#fcurve[@]} -eq ${#tcurve[@]} ]; then
 	echo "Your two fan curves don't match up - you should fix that."
 	exit
+else
+	echo "The fan curves match up! Good job :D"
 fi
 
 # Cleaner than worrying about if x or y statements imo
