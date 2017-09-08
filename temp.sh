@@ -107,10 +107,9 @@ function get_speed {
         # Get a new speed from curve
         for i in `seq 0 $clen`; do
             if [ "$temp" -le "${tcurve[$i]}" ]; then
-	            speed="${fcurve[$i]}"
+				speed="${fcurve[$i]}"
 				eles=$i
-                # Break to avoid redundant computation
-                break
+				break
             fi
         done
 	fi
