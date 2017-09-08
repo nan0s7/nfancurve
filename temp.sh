@@ -100,18 +100,18 @@ function set_speed {
 
 # This function is the biggest calculation in this script (use it sparingly)
 function get_speed {
-    # Execution of fan curve
+        # Execution of fan curve
 	if [ "$temp" -gt "$[ ${tcurve[-1]} + 10 ]" ]; then
-        speed="100"
-    else
-        # Get a new speed from curve
-        for i in `seq 0 $clen`; do
-            if [ "$temp" -le "${tcurve[$i]}" ]; then
-				speed="${fcurve[$i]}"
-				eles=$i
-				break
-            fi
-        done
+                speed="100"
+        else
+                # Get a new speed from curve
+                for i in `seq 0 $clen`; do
+                        if [ "$temp" -le "${tcurve[$i]}" ]; then
+                                speed="${fcurve[$i]}"
+                                eles=$i
+                                break
+                        fi
+                done
 	fi
 }
 
