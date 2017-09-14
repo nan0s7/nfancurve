@@ -1,5 +1,8 @@
 #!/bin/bash
-echo "~~ nan0s7's fan speed curve script ~~"
+echo "###################################"
+echo "# nan0s7's fan speed curve script #"
+echo "###################################"
+echo
 
 # Editable variables
 declare -a fcurve=( "25" "40" "55" "70" "85" ) # Fan speeds
@@ -19,9 +22,6 @@ clen=$[ ${#fcurve[@]} - 1 ]
 declare -a diff_curve=()
 declare -a diff_c2=()
 
-# Enable fan control (only works if CoolBits is enabled), see USAGE.md
-nvidia-settings -a "[gpu:""$gpu""]/GPUFanControlState=1"
-
 # Make sure the variables are back to normal
 function finish {
 	unset gpu
@@ -40,7 +40,10 @@ function finish {
 	unset eles
 	unset ver
 	unset diffr
+	unset hashes
 	echo -e "\nSuccessfully caught exit & cleared variables!"
+	set_fan_control 0
+	echo -e "\nFan control set back to auto mode."
 }
 trap finish EXIT
 
@@ -52,7 +55,7 @@ function check_driver {
 		echo "You're using an old and unsupported driver, please upgrade it."
 		exit
 	else
-		echo "Likely supported driver detected"
+		echo "A likely supported driver version was detected."
 	fi
 	unset ver
 }
@@ -63,7 +66,7 @@ function check_arrays {
 		echo "Your two fan curves don't match up - you should fix that."
 		exit
 	else
-		echo "The fan curves match up! Good job :D"
+		echo -e "The fan curves match up! \nGood job! :D"
 	fi
 }
 
@@ -79,23 +82,6 @@ function get_abs_tdiff {
 # This looked ugly when it was a lone command in the while loop
 function get_temp {
 	temp=`nvidia-settings -q=[gpu:"$gpu"]/GPUCoreTemp -t`
-}
-
-# diff curves are the difference in fan-curve temps for better slp changes
-function set_diffs {
-	for i in `seq 0 $[ $clen - 1 ]`; do
-		diffr=$[ ${tcurve[$[ $i + 1 ]]} - ${tcurve[$i]} ]
-		diff_curve+=("$diffr")
-		diff_c2+=("$[ $diffr / 2 ]")
-	done
-	unset diffr
-}
-
-# Function to contain the nvidia-settings command for changing speed
-function set_speed {
-	if ! [ "$1" -eq "$2" ]; then
-		nvidia-settings -a "[fan:0]/GPUTargetFanSpeed=""$1"
-	fi
 }
 
 # This function is the biggest calculation in this script (use it sparingly)
@@ -115,10 +101,34 @@ function get_speed {
 	fi
 }
 
+# Enable/disable fan control (if CoolBits is enabled) - see USAGE.md
+function set_fan_control {
+	nvidia-settings -a "[gpu:""$gpu""]/GPUFanControlState="$1
+}
+
+# diff curves are the difference in fan-curve temps for better slp changes
+function set_diffs {
+	for i in `seq 0 $[ $clen - 1 ]`; do
+		diffr=$[ ${tcurve[$[ $i + 1 ]]} - ${tcurve[$i]} ]
+		diff_curve+=("$diffr")
+		diff_c2+=("$[ $diffr / 2 ]")
+	done
+	unset diffr
+}
+
+# Function to contain the nvidia-settings command for changing speed
+function set_speed {
+	if ! [ "$1" -eq "$2" ]; then
+		nvidia-settings -a "[fan:0]/GPUTargetFanSpeed=""$1"
+	fi
+}
+
 function main {
 	check_driver
 	check_arrays
+	set_fan_control 1
 	set_diffs
+	set_speed $speed $old_speed
 
 	# Anything in this loop will be running in the persistant process
 	while true; do
@@ -143,7 +153,7 @@ function main {
 
 		# Execute `./temp.sh 1>log.txt 2>&1` to log all output
 		# Uncomment the following line if you want to log stuff
-		# echo "t="$temp" ot="$old_temp" sp="$speed" tdif="$tdiff" slp="$slp
+		echo "t="$temp" ot="$old_temp" sp="$speed" tdif="$tdiff" slp="$slp
 
 		# This will automatically adjust
 		sleep "$slp"
