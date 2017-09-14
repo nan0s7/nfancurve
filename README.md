@@ -25,16 +25,25 @@ If you need any help configuring my script or don't know how to make it start au
 - works for any PC hostname
 - easy-to-use update script
 
+## How to install
+**GitHub**
+- Download the .zip file straight from the GitHub
+- Extract it somewhere, and open a terminal to that directory
+- Make sure `CoolBits` is enabled
+- Run `./temp.sh` for a foreground process, or `./update.sh` for a background one
+- Check **USAGE.md** for instructions on how to start the script on boot and on how to enable `CoolBits`
+
+**git**
+- Choose a folder you want to download/install the script in
+- `git clone https://github.com/nan0s7/nfancurve`
+- See instructions for **GitHub** for the rest
 
 ## Stats
 - **v4** over 4.5h up-time: 0:03.88 CPU time
 - **v7** around 5h: 0:03.22 CPU time
 - **v10** around 5h: 0:02.42 CPU time
 
-I ended up catching the command I use to get the current temperature in action and these are the stats: 0:00.06 CPU time. I will say this is again quite inaccurate at this scale, and on other times I've caught the process I've seen the statistics vary by a small bit. _Please note I've removed the recorded memory footprint because it is so small it's negligible._
-
-These statistics should be taken with a grain of salt of course. My daily usage is usually with a _bazillion_ tabs open in Firefox and many, many windows from various programs. I do game as well, but not usually very intensive games. These are taken from either the _GNOME System Monitor_ or _htop_, and only take into account the script itself - measuring the Nvidia commands the script calls is mostly impractical and not needed. So whenever my script calls an Nvidia command, it is not measured in the statistics. My current CPU for measuring these stats is an i7 6700K @ 4.5GHz.
-
+I ended up catching the command I use to get the current temperature in action and these are the stats: 0:00.06 CPU time. I will say this is again quite inaccurate at this scale, and on other times I've caught the process I've seen the statistics vary by a small bit. My current CPU for measuring these stats is an i7 6700K @ 4.5GHz.
 
 **TODO:**
 - ~~add more error checking when getting the current GPU temperature~~
