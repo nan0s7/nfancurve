@@ -29,7 +29,7 @@ If you need any help configuring my script or don't know how to make it start au
 - Download the .zip file straight from the GitHubs
 - Extract it somewhere, and open a terminal to that directory
 - Make sure `CoolBits` is enabled
-- Run `./temp.sh` for a foreground process, or `./update.sh` for a background one
+- Run `./temp.sh` for a foreground process, or `./update.sh` for a background* one
 - Check **USAGE.md** for instructions on how to start the script on boot and on how to enable `CoolBits`
 
 **git**
@@ -54,3 +54,5 @@ I ended up catching the command I use to get the current temperature in action a
 - ~~make code more modular / more easily customisable~~
 - add in a **really** detailed guide of how the script works
 - add nouveau support (once they fix Pascal)
+
+*or just execute this command: `nohup ./temp.sh >/dev/null 2>&1 &`
