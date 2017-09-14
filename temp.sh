@@ -153,7 +153,7 @@ function main {
 
 		# Execute `./temp.sh 1>log.txt 2>&1` to log all output
 		# Uncomment the following line if you want to log stuff
-		echo "t="$temp" ot="$old_temp" sp="$speed" tdif="$tdiff" slp="$slp
+		# echo "t="$temp" ot="$old_temp" sp="$speed" tdif="$tdiff" slp="$slp
 
 		# This will automatically adjust
 		sleep "$slp"
