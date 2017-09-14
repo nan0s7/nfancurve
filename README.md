@@ -1,11 +1,6 @@
 # nfancurve
 A small and lightweight bash script for using a custom fan curve in Linux for those with an Nvidia GPU.
 
-**Prerequisites:**
-- Bash version 4 and above, or a bash-like shell with the same commands
-- Nvidia GLX Driver version greater than 304
-- Update script requires git (it'll check for it when it's run)
-
 You are probably wondering why I have chosen to write this script in Bash. The reason is very simple; I wanted a script with the minimum number of dependencies possible. To get this script up-and-running you _technically_ only need the **temp.sh** file.
 The script itself is supposed to be quite lightweight. Although I'm more comfortable with something along the lines of Python or C, I felt that this was a perfect opportunity to improve on my Bash skills.
 
@@ -18,12 +13,16 @@ If you need any help configuring my script or don't know how to make it start au
 ## Features
 - by default it has an aggressive fan curve profile (lower temps, louder noise)
 - uses `nvidia-settings` commands
-- automatically enables GPU fan control
+- automatically enables GPU fan control (but **not** `CoolBits`)
 - easy to read code, with plentiful comments (beginner friendly)
-- intelligently adjusts the time between tempurature readings
+- "intelligently" adjusts the time between tempurature readings
 - very lightweight; see stats section for more info
-- works for any PC hostname
-- easy-to-use update script
+- easy-to-use update script that uses `git`
+
+## Prerequisites
+- Bash version 4 and above, or a bash-like shell with the same commands
+- Nvidia GLX Driver version greater than 304
+- Update script requires git (it'll check for it when it's run)
 
 ## How to install
 **GitHub**
