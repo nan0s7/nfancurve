@@ -26,7 +26,7 @@ If you need any help configuring my script or don't know how to make it start au
 
 ## How to install
 **GitHub**
-- Download the .zip file straight from the GitHub
+- Download the .zip file straight from the GitHubs
 - Extract it somewhere, and open a terminal to that directory
 - Make sure `CoolBits` is enabled
 - Run `./temp.sh` for a foreground process, or `./update.sh` for a background one
@@ -42,7 +42,7 @@ If you need any help configuring my script or don't know how to make it start au
 - **v7** around 5h: 0:03.22 CPU time
 - **v10** around 5h: 0:02.42 CPU time
 
-I ended up catching the command I use to get the current temperature in action and these are the stats: 0:00.06 CPU time. I will say this is again quite inaccurate at this scale, and on other times I've caught the process I've seen the statistics vary by a small bit. My current CPU for measuring these stats is an i7 6700K @ 4.5GHz.
+I ended up catching the command I use to get the current temperature in action and these are the stats: 0:00.06 CPU time. I will say this is again quite inaccurate at this scale, and on other times I've caught the command I've seen the statistics vary by a small bit. My current CPU for measuring these stats is an i7 6700K @ 4.5GHz.
 
 **TODO:**
 - ~~add more error checking when getting the current GPU temperature~~
