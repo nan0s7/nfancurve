@@ -15,9 +15,9 @@ So you want to use my script, huh? Well lucky for you it's pretty easy. But befo
 4. I'd like to consider my script as being well-commented so if you're game then jump right in by opening my script in your favourite text editor. For **versions 6 through 11**, you may want to have a look at the line that defines the `CURVE` variable; where in the following example, a is the desired temperature you'd like the upper bound to be for changing the fan speed, and b is the fan-speed-percentage you want the fans to be running at: `["a"]="b"`. Also, I've written the script in such a way that you can have as many tempurature and fan-speed-percentage pairs as you like; just make sure they're all seperated by a space. For **versions 12 and above** I've split the array into `fcurve` and `tcurve` (fan and temperature respectively) to make things slightly easier. Make sure that the two arrays are of the same length, though. Otherwise everything I said before still applies.
 
 ## automating this script
-I've taken the (very small amount of) time to include a partially-completed .desktop file - you should locate that now. You need to change the "Path" and "Exec" lines (after the equal-sign). Also, place my script (temp.sh) somewhere safe but somewhere that you know where it is and makes sense. I usually put it somewhere in my home folder.
+You're going to have to make a .desktop file (copy the code below). Also, place my script (temp.sh) somewhere safe but somewhere that you know where it is and makes sense. I usually put it somewhere in my home folder.
 
-So if you put my script in your home folder, and lets say your user name/account name is "foo", your "Path" and "Exec" lines would go as follows:
+So if you put my script in your home folder, and lets say your user name/account name is "foo", your following "Path" and "Exec" lines would go as follows:
 - `Path=/home/foo/`
 - `Exec=/home/foo/temp.sh`
 
