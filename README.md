@@ -1,8 +1,7 @@
 # nfancurve
 A small and lightweight bash script for using a custom fan curve in Linux for those with an Nvidia GPU.
 
-You are probably wondering why I have chosen to write this script in Bash. The reason is very simple; I wanted a script with the minimum number of dependencies possible. To get this script up-and-running you _technically_ only need the **temp.sh** file.
-The script itself is supposed to be quite lightweight. Although I'm more comfortable with something along the lines of Python or C, I felt that this was a perfect opportunity to improve on my Bash skills.
+You are probably wondering why I have chosen to write this script in Bash. The reason is very simple; I wanted a script with the minimum number of dependencies possible. To get this script up-and-running you _technically_ only need the **temp.sh** file. If you don't have a certain dependency (ie git or procps) you can just remove the code that uses them.
 
 The current version of the script is **version 14.**
 
