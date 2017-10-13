@@ -266,7 +266,7 @@ function loop_commands {
 	fi
 
 	# Uncomment the following line if you want to log stuff
-	echo_info "$1"
+	#echo_info "$1"
 }
 
 # Split while-loops to avoid redundant computation
