@@ -4,29 +4,34 @@ echo "# nan0s7's fan speed curve script #"
 echo "###################################"
 echo
 
-# Editable variables
+# ------> Editable variables <------
 min_temp="0"
 max_temp="110"
 # ie - if you want something that's not celsius, change the above two
-declare -a slp_times=( "7" "5" "3" ) # Sleep time in descending order
-# ie - (needs 3 values) when script's not doing anything
+tdiff_avg_or_max="1"
+# ie - 0 to use the average of all temp diffs or 1 to limit the max size
+# that a tdiff value can be (0 = easier to compute, 1 = more flexible)
+declare -a slp_times=( "7" "5" ) # Sleep time in descending order
+# ie - (needs 2 values) when script's not doing anything
 declare -a fcurve=( "25" "40" "55" "70" "85" ) # Fan speeds
 declare -a tcurve=( "35" "45" "50" "55" "60" ) # Temperatures
 # ie - when temp<=35 degrees celsius the fan speed=25%
 
 # Variable initialisation (so don't change these)
 slp="0"
+tdiff="0"
 num_gpus="0"
-num_gpus_loop="0"
 num_fans="0"
+tdiff_avg="0"
+num_gpus_loop="0"
 clen="$[ ${#fcurve[@]} - 1 ]"
 declare -a temp=()
-declare -a old_temp=()
-declare -a tdiff=()
-declare -a diff_curve=()
-declare -a diff_c2=()
 declare -a exp_sp=()
-declare -a exp_diff=()
+declare -a diff_c2=()
+declare -a old_temp=()
+declare -a tdiff_hys=()
+declare -a tdiff_hys2=()
+declare -a diff_curve=()
 
 # Make sure the variables are back to normal
 function finish {
@@ -48,16 +53,21 @@ function finish {
     unset num_gpus_loop
     unset tmp
     unset exp_sp
-    unset exp_diff
-    unset exp_diff2
     unset exp_sp_temp
     unset min_temp
     unset max_temp
-    unset firstPID
+    unset process_pid
+	unset tdiff_hys
+	unset tdiff_hys2
+	unset tdiff_avg
+	unset tdiff_avg_or_max
+
     echo "Successfully caught exit & cleared variables!"
 }
 trap finish EXIT
 
+# FUNCTIONS THAT DEPEND ON STUFF
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # More than one process can be problematic
 function check_already_running {
 	tmp=`pgrep -c temp`
@@ -65,14 +75,14 @@ function check_already_running {
 		echo -e "This code was taken from my other script, called; nron.sh"
 		echo -e "Check out https://github.com/nan0s7/nrunornot for more info!\n"
 		for i in `seq 1 $[ $tmp - 1 ]`; do
-			firstPID=`pgrep -o temp.sh`
-			echo -e "Killing process... "$firstPID"\n"
-			kill $firstPID
+			process_pid=`pgrep -o temp.sh`
+			echo -e "Killing process... "$process_pid"\n"
+			kill $process_pid
 		done
 	else
 		echo -e "No other versions of temp.sh running in background\n"
 	fi
-	unset firstPID
+	unset process_pid
 	unset tmp
 }
 
@@ -88,33 +98,42 @@ function check_driver {
 	unset tmp
 }
 
-# Check that the curves are the same length
-function check_arrays {
-	if ! [ "${#fcurve[@]}" -eq "${#tcurve[@]}" ]; then
-		echo "Your two fan curves don't match up - you should fix that."
-		exit
-	else
-		echo -e "The fan curves match up! \nGood job! :D"
-	fi
-}
-
-# Cleaner than worrying about if x or y statements in main imo
-function get_abs_tdiff {
-	if [ "$1" -le "$2" ]; then
-		tdiff["$3"]="$[ $2 - $1 ]"
-	else
-		tdiff["$3"]="$[ $1 - $2 ]"
-	fi
-}
-
 # This looked ugly when it was a lone command in the while loop
 function get_temp {
 	temp["$1"]=`nvidia-settings -q=[gpu:"$1"]/GPUCoreTemp -t`
 }
 
+# Made this seperate for more code flexibility
+function get_tdiff_avg {
+    tmp="0"
+	for i in `seq 0 $[ $clen - 1 ]`; do
+		tmp="$[ $tmp + $[ ${tcurve[$[ $i + 1 ]]} - ${tcurve[$i]} ] ]"
+	done
+	tdiff_avg="$[ $tmp / $clen ]"
+	echo "tdiff average: ""$tdiff_avg"
+	unset tmp
+}
+
+# Seperated for compatability and debugging flexibility
+function get_fans_cmd {
+    num_fans=`nvidia-settings -q fans`
+    if [ "$1" -eq "0" ]; then
+        echo "$num_fans"
+    fi
+}
+
+# Same reasoning for get_fans_cmd
+function get_gpus_cmd {
+    num_gpus=`nvidia-settings -q gpus`
+    if [ "$1" -eq "0" ]; then
+        echo "$num_gpus"
+    fi
+}
+
+
 # Finds the total number of fans by cutting the output string
 function get_num_fans {
-    num_fans=`nvidia-settings -q fans`
+    get_fans_cmd "1"
     tmp="${num_fans%* Fan on*}"
     if [ "${#tmp}" -gt "2" ]; then
         num_fans="${num_fans%* Fans on*}"
@@ -127,7 +146,7 @@ function get_num_fans {
 
 # Finds the total number of gpus by cutting the output string
 function get_num_gpus {
-    num_gpus=`nvidia-settings -q gpus`
+    get_gpus_cmd "1"
     tmp="${num_gpus%* GPU on*}"
     if [ "${#tmp}" -gt "2" ]; then
         num_gpus="${num_gpus%* GPUs on*}"
@@ -137,23 +156,6 @@ function get_num_gpus {
     unset tmp
     num_gpus_loop="$[ $num_gpus - 1 ]"
     echo "Number of GPUs detected: ""$num_gpus"
-}
-
-# Make sure sleep time is as small as needed (reduce computation time)
-function set_init_slp {
-	if [ "$1" -eq "0" ]; then
-		slp="0"
-		function set_sleep {
-			slp="$1"
-		}
-	else
-		slp="${slp_times[0]}"
-		function set_sleep {
-			if [ "$1" -lt "$slp" ]; then
-				slp="$1"
-			fi
-		}
-	fi
 }
 
 # Enable/disable fan control (if CoolBits is enabled) - see USAGE.md
@@ -167,13 +169,32 @@ function set_fan_control {
 function set_speed {
 	nvidia-settings -a "[fan:""$1""]/GPUTargetFanSpeed=""$2"
 }
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+# Check that the curves are the same length
+function check_arrays {
+	if ! [ "${#fcurve[@]}" -eq "${#tcurve[@]}" ]; then
+		echo "Your two fan curves don't match up - you should fix that."
+		exit
+	else
+		echo -e "The fan curves match up! \nGood job! :D"
+	fi
+}
+
+# Cleaner than worrying about if x or y statements in main imo
+function get_abs_tdiff {
+	if [ "$1" -le "$2" ]; then
+		tdiff="$[ $2 - $1 ]"
+	else
+		tdiff="$[ $1 - $2 ]"
+	fi
+}
 
 # Set every existing array to be zero
 function set_all_arr_zero {
 	for i in `seq 0 $1`; do
 		temp["$i"]="0"
 		old_temp["$i"]="0"
-		tdiff["$i"]="0"
 	done
 }
 
@@ -197,7 +218,17 @@ function set_exp_arr {
 # diff curves are the difference in fan-curve temps for better slp changes
 function set_temporary_diffs {
 	for i in `seq 0 $[ $clen - 1 ]`; do
-		tmp="$[ ${tcurve[$[ $i + 1 ]]} - ${tcurve[$i]} ]"
+		if [ "$tdiff_avg_or_max" -eq "0" ]; then
+			tmp="$tdiff_avg"
+		elif [ "$tdiff_avg_or_max" -eq "1" ]; then
+			tmp="$[ ${tcurve[$[ $i + 1 ]]} - ${tcurve[$i]} ]"
+			if [ "$tmp" -gt "$tdiff_avg" ]; then
+				tmp="$tdiff_avg"
+			fi
+		else
+			echo "You've messed up the tdiff_avg_or_max value!"
+    		echo "It is: ""$tdiff_avg_or_max"
+		fi
 		diff_curve+=( "$tmp" )
 		diff_c2+=( "$[ $tmp / 2 ]" )
 	done
@@ -212,13 +243,13 @@ function set_diffs {
 
 	for i in `seq $min_temp $max_temp`; do
 		if [ "$i" -gt "${tcurve[-1]}" ]; then
-        	exp_diff["$i"]="${diff_curve[-1]}"
-        	exp_diff2["$i"]="${diff_c2[-1]}"
+        	tdiff_hys["$i"]="${diff_curve[-1]}"
+        	tdiff_hys2["$i"]="${diff_c2[-1]}"
         else
 			for j in `seq 0 $clen`; do
 		        if [ "$i" -le "${tcurve[$j]}" ]; then
-		            exp_diff["$i"]="${diff_curve[$j]}"
-		            exp_diff2["$i"]="${diff_c2[$j]}"
+		            tdiff_hys["$i"]="${diff_curve[$j]}"
+		            tdiff_hys2["$i"]="${diff_c2[$j]}"
 		            break
 		        fi
 		    done
@@ -226,12 +257,28 @@ function set_diffs {
 	done
 }
 
+function set_sleep {
+	if [ "$1" -lt "$slp" ]; then
+		slp="$1"
+	fi
+}
+
 # Prints important variables for debugging purposes
 function echo_info {
-	tmp="t=""${temp[$1]}"" ot=""${old_temp[$1]}"" tdif=""${tdiff[$1]}"
-	tmp="$tmp"" slp=""${slp[@]}"" gpu=""$1"
+	tmp="t=""${temp[$1]}"" ot=""${old_temp[$1]}"" tdif=""$tdiff"
+	tmp="$tmp"" slp=""$slp"" gpu=""$1"
 	echo "$tmp"
 	unset tmp
+}
+
+function echo_tdiff_hys_selection {
+	if [ "$tdiff_avg_or_max" -eq "0" ]; then
+		echo "Using average value for temperature difference"
+	elif [ "$tdiff_avg_or_max" -eq "1" ]; then
+		echo "Using maximum limit for the temperature difference"
+	else
+		echo "Wrong value for tdiff_avg_or_max!"
+	fi
 }
 
 # After initial computations some variables are no longer needed
@@ -242,31 +289,37 @@ function unset_unused_vars {
 	unset fcurve
 	unset min_temp
 	unset max_temp
+	unset tdiff_avg_or_max
 }
 
+# Main loop stuff
 function loop_commands {
 	# Current temperature query
 	get_temp "$1"
 
-	# Calculate tdiff and make sure it's positive
-	get_abs_tdiff "${temp[$1]}" "${old_temp[$1]}" "$1"
+	if [ "${temp[$1]}" -ne "${old_temp[$1]}" ]; then
+		# Calculate tdiff and make sure it's positive
+		get_abs_tdiff "${temp[$1]}" "${old_temp[$1]}" "$1"
 
-	if [ "${tdiff[$1]}" -ge "${exp_diff[${temp[$1]}]}" ]; then
-		# Avoid dumb nvidia-settings calls
-		exp_sp_temp="${exp_sp[${temp[$1]}]}"
-        if [ "$exp_sp_temp" -ne "${exp_sp[${old_temp[$1]}]}" ]; then
-		    set_speed "$1" "$exp_sp_temp"
+		if [ "$tdiff" -le "${tdiff_hys2[${temp[$1]}]}" ]; then
+			set_sleep "${slp_times[0]}"
+		elif [ "$tdiff" -lt "${tdiff_hys[${temp[$1]}]}" ]; then
+			set_sleep "${slp_times[1]}"
+		else
+			# Avoid dumb nvidia-settings calls
+			exp_sp_temp="${exp_sp[${temp[$1]}]}"
+		    if [ "$exp_sp_temp" -ne "${exp_sp[${old_temp[$1]}]}" ]; then
+				set_speed "$1" "$exp_sp_temp"
+			fi
+			old_temp["$1"]="${temp[$1]}"
+			set_sleep "${slp_times[0]}"
 		fi
-		old_temp["$1"]="${temp[$1]}"
-		set_sleep "${slp_times[2]}"
-	elif [ "${tdiff[$1]}" -ge "${exp_diff2[${temp[$1]}]}" ]; then
-		set_sleep "${slp_times[1]}"
 	else
 		set_sleep "${slp_times[0]}"
 	fi
 
 	# Uncomment the following line if you want to log stuff
-	#echo_info "$1"
+	echo_info "$1"
 }
 
 # Split while-loops to avoid redundant computation
@@ -274,16 +327,13 @@ function start_process {
 	if [ "$num_gpus" -eq "1" ]; then
 		echo "Started process for 1 GPU and 1 Fan"
 
-		set_init_slp "0"
-
 		while true; do
+			slp="${slp_times[0]}"
 			loop_commands "0"
 			sleep "$slp"
 		done
 	else
 		echo "Started process for n-GPUs and n-Fans"
-
-		set_init_slp "1"
 
 		while true; do
 			slp="${slp_times[0]}"
@@ -302,12 +352,15 @@ function main {
 	check_arrays
     get_num_fans
     get_num_gpus
-    set_diffs
-    set_exp_arr
+    get_tdiff_avg
+
+	set_diffs
+	set_exp_arr
 
 	set_all_arr_zero "$num_gpus_loop"
 	set_fan_control "$num_gpus_loop" "1"
 
+	echo_tdiff_hys_selection
 	unset_unused_vars
 
 	# Haven't added individual fan control yet
@@ -315,8 +368,8 @@ function main {
 		start_process
 	else
 		echo "Submit an issue on my GitHub page... happy to fix this :D"
-		echo `nvidia-settings -q fans`
-		echo `nvidia-settings -q gpus`
+		get_fans_cmd "0"
+		get_gpus_cmd "0"
 	fi
 }
 
