@@ -23,7 +23,7 @@ If you need any help configuring my script or don't know how to make it start au
 - **_Bash_** version 4 and above, or a bash-like shell with the same syntax
 - **_NVIDIA GLX Driver_** version greater than 304
 - **_procps_** in version 14 and greater - you can comment out the function `check_already_running` if you don't have it
-- Update script requires **_git_** (it'll check for it when it's run)
+- **_git_** is needed for use of `update.sh` (it'll check for it when it's run)
 
 ## How to install
 **GitHub**
@@ -50,6 +50,11 @@ I ended up catching the command I use to get the current temperature in action a
 - add in a **really** detailed guide of how the script works
 - add nouveau support (once they fix Pascal)
 - allow single GPU's other than GPU-0 to be used
-- add support for GPU's that have more than one controllable fan (ie >1 fan controller)
+- add support for GPU's that have more than one controllable fan (i.e. >1 fan controller)
 
 *or just execute this command: `nohup ./temp.sh >/dev/null 2>&1 &`
+
+## Honourable mentions
+- [@aryonoco](https://github.com/aryonoco), for being my multi-GPU guinea pig
+- [@civyshk](https://github.com/civyshk), for making a Python fork
+- [@zJelly](https://github.com/zJelly), for working on AMD supporting fork
