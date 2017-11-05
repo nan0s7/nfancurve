@@ -1,0 +1,6 @@
+min_temp: 0
+max_temp: 110
+tdiff_avg_or_max: 1
+slp_times: 7, 5
+fcurve: 25, 40, 55, 70, 85
+tcurve: 35, 45, 50, 55, 60
