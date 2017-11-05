@@ -5,36 +5,20 @@ echo "###################################"
 echo
 
 # ------> Editable variables <------
-min_temp="0"
-max_temp="110"
+
+# Moved to config, read here first for an explanation:
+# ------> min_temp & max_temp
 # ie - if you want something that's not celsius, change the above two
-tdiff_avg_or_max="1"
+# ------> tdiff_avg_or_max
 # ie - 0 to use the average of all temp diffs or 1 to limit the max size
 # that a tdiff value can be (0 = easier to compute, 1 = more flexible)
-declare -a slp_times=( "7" "5" ) # Sleep time in descending order
+# ------> slp_times
 # ie - (needs 2 values) when script's not doing anything
-declare -a fcurve=( "25" "40" "55" "70" "85" ) # Fan speeds
-declare -a tcurve=( "35" "45" "50" "55" "60" ) # Temperatures
+# ------> fcurve & tcurve
 # ie - when temp<=35 degrees celsius the fan speed=25%
 
-# Variable initialisation (so don't change these)
-slp="0"
-tdiff="0"
-num_gpus="0"
-num_fans="0"
-tdiff_avg="0"
-num_gpus_loop="0"
-clen="$[ ${#fcurve[@]} - 1 ]"
-declare -a temp=()
-declare -a exp_sp=()
-declare -a diff_c2=()
-declare -a old_temp=()
-declare -a tdiff_hys=()
-declare -a tdiff_hys2=()
-declare -a diff_curve=()
-
 # Make sure the variables are back to normal
-function finish {
+finish() {
 	set_fan_control "$num_gpus_loop" "0"
 	echo "Fan control set back to auto mode."
 	unset temp
@@ -45,6 +29,9 @@ function finish {
 	unset tdiff
 	unset clen
 	unset diff_c2
+    unset line
+    unset var_line
+    unset form_line
 	unset diff_curve
 	unset tcurve
 	unset fcurve
@@ -66,10 +53,77 @@ function finish {
 }
 trap finish EXIT
 
+# Variable initialisation (so don't change these)
+slp="0"
+tdiff="0"
+min_temp=""
+max_temp=""
+num_gpus="0"
+num_fans="0"
+tdiff_avg="0"
+num_gpus_loop="0"
+tdiff_avg_or_max=""
+declare -a temp=()
+declare -a exp_sp=()
+declare -a fcurve=()
+declare -a tcurve=()
+declare -a diff_c2=()
+declare -a old_temp=()
+declare -a tdiff_hys=()
+declare -a slp_times=()
+declare -a tdiff_hys2=()
+declare -a diff_curve=()
+
+read_config() {
+    while IFS='' read -r line || [[ -n "$line" ]]; do
+        var_line="${line%*:*}"
+        line="${line#*:*}"
+        if [ "$var_line" == "min_temp" ]; then
+            min_temp="$line"
+        elif [ "$var_line" == "max_temp" ]; then
+            max_temp="$line"
+        elif [ "$var_line" == "tdiff_avg_or_max" ]; then
+            tdiff_avg_or_max="$line"
+        elif [ "$var_line" == "slp_times" ]; then
+            form_line="$line"
+            while true; do
+                slp_times+=( ${form_line%%,*} )
+                if [ "${form_line%%,*}" == "$form_line" ]; then
+                    break
+                fi
+                form_line="${form_line#*,*}"
+            done
+        elif [ "$var_line" == "fcurve" ]; then
+            form_line="$line"
+            while true; do
+                fcurve+=( ${form_line%%,*} )
+                if [ "${form_line%%,*}" == "$form_line" ]; then
+                    break
+                fi
+                form_line="${form_line#*,*}"
+            done
+        elif [ "$var_line" == "tcurve" ]; then
+            form_line="$line"
+            while true; do
+                tcurve+=( ${form_line%%,*} )
+                if [ "${form_line%%,*}" == "$form_line" ]; then
+                    break
+                fi
+                form_line="${form_line#*,*}"
+            done
+        else
+            echo "Error reading config"
+        fi
+    done < "config.txt"
+}
+
+read_config
+clen="$[ ${#fcurve[@]} - 1 ]"
+
 # FUNCTIONS THAT DEPEND ON STUFF
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # More than one process can be problematic
-function check_already_running {
+check_already_running() {
 	tmp=`pgrep -c temp`
 	if [ "$tmp" -eq "2" ]; then
 		echo -e "This code was taken from my other script, called; nron.sh"
@@ -87,7 +141,7 @@ function check_already_running {
 }
 
 # Check driver version; I don't really know the right version number
-function check_driver {
+check_driver() {
 	tmp=`nvidia-settings -v`
 	if [ "${tmp:27:3}" -lt "304" ]; then
 		echo "You're using an old and unsupported driver, please upgrade it."
@@ -99,12 +153,12 @@ function check_driver {
 }
 
 # This looked ugly when it was a lone command in the while loop
-function get_temp {
+get_temp() {
 	temp["$1"]=`nvidia-settings -q=[gpu:"$1"]/GPUCoreTemp -t`
 }
 
 # Made this seperate for more code flexibility
-function get_tdiff_avg {
+get_tdiff_avg() {
     tmp="0"
 	for i in `seq 0 $[ $clen - 1 ]`; do
 		tmp="$[ $tmp + $[ ${tcurve[$[ $i + 1 ]]} - ${tcurve[$i]} ] ]"
@@ -115,7 +169,7 @@ function get_tdiff_avg {
 }
 
 # Seperated for compatability and debugging flexibility
-function get_fans_cmd {
+get_fans_cmd() {
     num_fans=`nvidia-settings -q fans`
     if [ "$1" -eq "0" ]; then
         echo "$num_fans"
@@ -123,16 +177,15 @@ function get_fans_cmd {
 }
 
 # Same reasoning for get_fans_cmd
-function get_gpus_cmd {
+get_gpus_cmd() {
     num_gpus=`nvidia-settings -q gpus`
     if [ "$1" -eq "0" ]; then
         echo "$num_gpus"
     fi
 }
 
-
 # Finds the total number of fans by cutting the output string
-function get_num_fans {
+get_num_fans() {
     get_fans_cmd "1"
     tmp="${num_fans%* Fan on*}"
     if [ "${#tmp}" -gt "2" ]; then
@@ -145,7 +198,7 @@ function get_num_fans {
 }
 
 # Finds the total number of gpus by cutting the output string
-function get_num_gpus {
+get_num_gpus() {
     get_gpus_cmd "1"
     tmp="${num_gpus%* GPU on*}"
     if [ "${#tmp}" -gt "2" ]; then
@@ -159,20 +212,20 @@ function get_num_gpus {
 }
 
 # Enable/disable fan control (if CoolBits is enabled) - see USAGE.md
-function set_fan_control {
+set_fan_control() {
 	for i in `seq 0 $1`; do
 		nvidia-settings -a "[gpu:""$i""]/GPUFanControlState=""$2"
 	done
 }
 
-# Function to contain the nvidia-settings command for changing speed
-function set_speed {
+# to contain the nvidia-settings command for changing speed
+set_speed() {
 	nvidia-settings -a "[fan:""$1""]/GPUTargetFanSpeed=""$2"
 }
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # Check that the curves are the same length
-function check_arrays {
+check_arrays() {
 	if ! [ "${#fcurve[@]}" -eq "${#tcurve[@]}" ]; then
 		echo "Your two fan curves don't match up - you should fix that."
 		exit
@@ -182,7 +235,7 @@ function check_arrays {
 }
 
 # Cleaner than worrying about if x or y statements in main imo
-function get_abs_tdiff {
+get_abs_tdiff() {
 	if [ "$1" -le "$2" ]; then
 		tdiff="$[ $2 - $1 ]"
 	else
@@ -191,7 +244,7 @@ function get_abs_tdiff {
 }
 
 # Set every existing array to be zero
-function set_all_arr_zero {
+set_all_arr_zero() {
 	for i in `seq 0 $1`; do
 		temp["$i"]="0"
 		old_temp["$i"]="0"
@@ -199,7 +252,7 @@ function set_all_arr_zero {
 }
 
 # Expand speed curve into an arr that reduces comp. time (hopefully)
-function set_exp_arr {
+set_exp_arr() {
 	exp_sp["$min_temp"]="0"
 	for i in `seq $[ $min_temp + 1 ] $max_temp`; do
 		if [ "$i" -gt "${tcurve[-1]}" ]; then
@@ -216,7 +269,7 @@ function set_exp_arr {
 }
 
 # diff curves are the difference in fan-curve temps for better slp changes
-function set_temporary_diffs {
+set_temporary_diffs() {
 	for i in `seq 0 $[ $clen - 1 ]`; do
 		if [ "$tdiff_avg_or_max" -eq "0" ]; then
 			tmp="$tdiff_avg"
@@ -238,7 +291,7 @@ function set_temporary_diffs {
 }
 
 # exp curves are expanded versions which reduce computation overall
-function set_diffs {
+set_diffs() {
 	set_temporary_diffs
 
 	for i in `seq $min_temp $max_temp`; do
@@ -257,21 +310,21 @@ function set_diffs {
 	done
 }
 
-function set_sleep {
+set_sleep() {
 	if [ "$1" -lt "$slp" ]; then
 		slp="$1"
 	fi
 }
 
 # Prints important variables for debugging purposes
-function echo_info {
+echo_info() {
 	tmp="t=""${temp[$1]}"" ot=""${old_temp[$1]}"" tdif=""$tdiff"
 	tmp="$tmp"" slp=""$slp"" gpu=""$1"
 	echo "$tmp"
 	unset tmp
 }
 
-function echo_tdiff_hys_selection {
+echo_tdiff_hys_selection() {
 	if [ "$tdiff_avg_or_max" -eq "0" ]; then
 		echo "Using average value for temperature difference"
 	elif [ "$tdiff_avg_or_max" -eq "1" ]; then
@@ -282,7 +335,7 @@ function echo_tdiff_hys_selection {
 }
 
 # After initial computations some variables are no longer needed
-function unset_unused_vars {
+unset_unused_vars() {
 	unset diff_curve
 	unset diff_c2
 	unset tcurve
@@ -293,7 +346,7 @@ function unset_unused_vars {
 }
 
 # Main loop stuff
-function loop_commands {
+loop_commands() {
 	# Current temperature query
 	get_temp "$1"
 
@@ -323,7 +376,7 @@ function loop_commands {
 }
 
 # Split while-loops to avoid redundant computation
-function start_process {
+start_process() {
 	if [ "$num_gpus" -eq "1" ]; then
 		echo "Started process for 1 GPU and 1 Fan"
 
@@ -345,7 +398,7 @@ function start_process {
 	fi
 }
 
-function main {
+main() {
 	check_already_running
 
 	check_driver
