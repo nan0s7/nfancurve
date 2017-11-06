@@ -5,8 +5,7 @@ echo "###################################"
 echo
 
 # ------> Editable variables <------
-
-# Moved to config, read here first for an explanation:
+# Moved to config.txt, read this first for an explanation:
 # ------> min_temp & max_temp
 # ie - if you want something that's not celsius, change the above two
 # ------> tdiff_avg_or_max
@@ -21,32 +20,33 @@ echo
 finish() {
 	set_fan_control "$num_gpus_loop" "0"
 	echo "Fan control set back to auto mode."
-	unset temp
-	unset old_temp
-	unset slp
-	unset slp_times
+	
 	unset i
-	unset tdiff
-	unset clen
-	unset diff_c2
+    unset slp
+    unset tmp
+    unset temp
     unset line
-    unset var_line
-    unset form_line
-	unset diff_curve
-	unset tcurve
+    unset clen
+    unset tdiff
+    unset exp_sp
+    unset tcurve
 	unset fcurve
+	unset diff_c2
+	unset old_temp
+	unset var_line
     unset num_gpus
     unset num_fans
-    unset num_gpus_loop
-    unset tmp
-    unset exp_sp
-    unset exp_sp_temp
     unset min_temp
     unset max_temp
-    unset process_pid
+    unset form_line
+    unset slp_times
 	unset tdiff_hys
-	unset tdiff_hys2
 	unset tdiff_avg
+	unset tdiff_hys2
+	unset diff_curve
+	unset process_pid
+	unset exp_sp_temp
+	unset num_gpus_loop
 	unset tdiff_avg_or_max
 
     echo "Successfully caught exit & cleared variables!"
@@ -63,6 +63,7 @@ num_fans="0"
 tdiff_avg="0"
 num_gpus_loop="0"
 tdiff_avg_or_max=""
+
 declare -a temp=()
 declare -a exp_sp=()
 declare -a fcurve=()
@@ -74,6 +75,7 @@ declare -a slp_times=()
 declare -a tdiff_hys2=()
 declare -a diff_curve=()
 
+# Read my config file in a really uninteresting way
 read_config() {
     while IFS='' read -r line || [[ -n "$line" ]]; do
         var_line="${line%*:*}"
@@ -84,28 +86,20 @@ read_config() {
             max_temp="$line"
         elif [ "$var_line" == "tdiff_avg_or_max" ]; then
             tdiff_avg_or_max="$line"
-        elif [ "$var_line" == "slp_times" ]; then
+        elif [ "$var_line" == "slp_times" ] ||
+        		[ "$var_line" == "fcurve" ] ||
+        		[ "$var_line" == "tcurve" ]; then
             form_line="$line"
             while true; do
-                slp_times+=( ${form_line%%,*} )
-                if [ "${form_line%%,*}" == "$form_line" ]; then
-                    break
+            	if [ "$var_line" == "slp_times" ]; then
+                	slp_times+=( ${form_line%%,*} )
+                elif [ "$var_line" == "fcurve" ]; then
+                	fcurve+=( ${form_line%%,*} )
+                elif [ "$var_line" == "tcurve" ]; then
+                	tcurve+=( ${form_line%%,*} )
+                else
+                	echo "Reading array error thingo!"
                 fi
-                form_line="${form_line#*,*}"
-            done
-        elif [ "$var_line" == "fcurve" ]; then
-            form_line="$line"
-            while true; do
-                fcurve+=( ${form_line%%,*} )
-                if [ "${form_line%%,*}" == "$form_line" ]; then
-                    break
-                fi
-                form_line="${form_line#*,*}"
-            done
-        elif [ "$var_line" == "tcurve" ]; then
-            form_line="$line"
-            while true; do
-                tcurve+=( ${form_line%%,*} )
                 if [ "${form_line%%,*}" == "$form_line" ]; then
                     break
                 fi
@@ -116,9 +110,6 @@ read_config() {
         fi
     done < "config.txt"
 }
-
-read_config
-clen="$[ ${#fcurve[@]} - 1 ]"
 
 # FUNCTIONS THAT DEPEND ON STUFF
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -372,7 +363,7 @@ loop_commands() {
 	fi
 
 	# Uncomment the following line if you want to log stuff
-	echo_info "$1"
+	#echo_info "$1"
 }
 
 # Split while-loops to avoid redundant computation
@@ -400,6 +391,9 @@ start_process() {
 
 main() {
 	check_already_running
+
+	read_config
+	clen="$[ ${#fcurve[@]} - 1 ]"
 
 	check_driver
 	check_arrays
