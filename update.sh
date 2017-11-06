@@ -1,7 +1,7 @@
 #!/bin/bash
 echo "~~ nan0s7's fan-speed curve script updater script ~~"
 
-function finish {
+finish() {
 	unset git_version
 	unset local_version
 	unset repo_version
@@ -10,7 +10,7 @@ function finish {
 }
 trap finish EXIT
 
-function check_for_git {
+check_for_git() {
 	echo -e "\nChecking if git is installed..."
 	git_version=`git --version`
 
@@ -24,7 +24,7 @@ function check_for_git {
 	fi
 }
 
-function get_nfancurve_version {
+get_nfancurve_version() {
     # Currently installed version
     local_version=`cat VERSION.txt`
     # Repository's version
@@ -36,7 +36,7 @@ function get_nfancurve_version {
     echo "Latest version of script: "$repo_version
 }
 
-function update_everything {
+update_everything() {
     if [ "$local_version" -eq "$repo_version" ]; then
 	    echo "You are using the most up-to-date version"
     elif [ "$local_version" -lt "$repo_version" ]; then
@@ -46,6 +46,9 @@ function update_everything {
 
 	    # Downloads the whole repository to make sure nothing is old
 	    `git clone https://github.com/nan0s7/nfancurve`
+        if [ -f "config.txt" ]; then
+            mv config.txt nfancurve/config.txt
+        fi
 	    cd nfancurve
 	    echo "Replacing old files"
 	    # Moves every file into main directory
@@ -61,7 +64,7 @@ function update_everything {
     fi
 }
 
-function kill_already_running {
+kill_already_running() {
     # Gets the running PID for my script (if it's running)
     temp_count=`pgrep -c temp.sh`
     echo -e "\nThis code was taken from my other script, called; nron.sh"
@@ -77,7 +80,7 @@ function kill_already_running {
     fi
 }
 
-function main {
+main() {
     check_for_git
     get_nfancurve_version
 
