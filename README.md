@@ -3,7 +3,7 @@ A small and lightweight bash script for using a custom fan curve in Linux for th
 
 You are probably wondering why I have chosen to write this script in Bash. The reason is very simple; I wanted a script with the minimum number of dependencies possible. To get this script up-and-running you _technically_ only need the **temp.sh** file. If you don't have a certain dependency (i.e. git or procps) you can just remove the code that uses them.
 
-The current version of the script is **version 14.**
+The current version of the script is **version 15.**
 
 This script is currently set up for Celsius. However, it can easily be modified for other temperature scales.
 
@@ -18,6 +18,7 @@ If you need any help configuring my script or don't know how to make it start au
 - very lightweight; see stats section for more info
 - easy-to-use update script that uses `git`
 - supports multiple GPU control
+- now uses a config file that doesn't get overwritten after updates
 
 ## Prerequisites
 - **_Bash_** version 4 and above, or a bash-like shell with the same syntax
