@@ -16,30 +16,62 @@ echo
 # ------> fcurve & tcurve
 # ie - when temp<=35 degrees celsius the fan speed=25%
 
+usage="$(basename "$0") [-h] [-c -d] -- A small and lightweight Bash script for using a custom fan curve in Linux for those with an Nvidia GPU.
+
+where:
+-h  show this help text
+-c  configuration file (default config.txt)
+-d  display device string (e.g. \":0\", \"CRT-0\"), defaults to auto detection"
+
+DISPLAY_CMD=""
+CONFIG_FILE="config.txt"
+
+while getopts ":h :c: :d:" opt; do
+  case $opt in
+	c)
+	  CONFIG_FILE="$OPTARG"
+	  ;;
+	d)
+	  DISPLAY_CMD="-c $OPTARG"
+	  ;;
+	h)
+	  echo "$usage" >&2
+	  exit
+	  ;;
+	\?)
+	  echo "Invalid option: -$OPTARG" >&2
+	  ;;
+	:)
+	  echo "Option -$OPTARG requires an argument." >&2
+	  exit
+	  ;;
+  esac
+done
+
 # Make sure the variables are back to normal
 finish() {
 	set_fan_control "$num_gpus_loop" "0"
 	echo "Fan control set back to auto mode."
 	
 	unset i
-    unset slp
-    unset tmp
-    unset temp
-    unset line
-    unset clen
-    unset tdiff
-    unset exp_sp
-    unset tcurve
+	unset slp
+	unset tmp
+	unset temp
+	unset line
+	unset clen
+	unset tdiff
+	unset exp_sp
+	unset tcurve
 	unset fcurve
 	unset diff_c2
 	unset old_temp
 	unset var_line
-    unset num_gpus
-    unset num_fans
-    unset min_temp
-    unset max_temp
-    unset form_line
-    unset slp_times
+	unset num_gpus
+	unset num_fans
+	unset min_temp
+	unset max_temp
+	unset form_line
+	unset slp_times
 	unset tdiff_hys
 	unset tdiff_avg
 	unset tdiff_hys2
@@ -49,7 +81,7 @@ finish() {
 	unset num_gpus_loop
 	unset tdiff_avg_or_max
 
-    echo "Successfully caught exit & cleared variables!"
+	echo "Successfully caught exit & cleared variables!"
 }
 trap finish EXIT
 
@@ -77,38 +109,38 @@ declare -a diff_curve=()
 
 # Read my config file in a really uninteresting way
 read_config() {
-    while IFS='' read -r line || [[ -n "$line" ]]; do
-        var_line="${line%*:*}"
-        line="${line#*:*}"
-        if [ "$var_line" == "min_temp" ]; then
-            min_temp="$line"
-        elif [ "$var_line" == "max_temp" ]; then
-            max_temp="$line"
-        elif [ "$var_line" == "tdiff_avg_or_max" ]; then
-            tdiff_avg_or_max="$line"
-        elif [ "$var_line" == "slp_times" ] ||
-        		[ "$var_line" == "fcurve" ] ||
-        		[ "$var_line" == "tcurve" ]; then
-            form_line="$line"
-            while true; do
-            	if [ "$var_line" == "slp_times" ]; then
-                	slp_times+=( ${form_line%%,*} )
-                elif [ "$var_line" == "fcurve" ]; then
-                	fcurve+=( ${form_line%%,*} )
-                elif [ "$var_line" == "tcurve" ]; then
-                	tcurve+=( ${form_line%%,*} )
-                else
-                	echo "Reading array error thingo!"
-                fi
-                if [ "${form_line%%,*}" == "$form_line" ]; then
-                    break
-                fi
-                form_line="${form_line#*,*}"
-            done
-        else
-            echo "Error reading config"
-        fi
-    done < "config.txt"
+	while IFS='' read -r line || [[ -n "$line" ]]; do
+		var_line="${line%*:*}"
+		line="${line#*:*}"
+		if [ "$var_line" == "min_temp" ]; then
+			min_temp="$line"
+		elif [ "$var_line" == "max_temp" ]; then
+			max_temp="$line"
+		elif [ "$var_line" == "tdiff_avg_or_max" ]; then
+			tdiff_avg_or_max="$line"
+		elif [ "$var_line" == "slp_times" ] ||
+				[ "$var_line" == "fcurve" ] ||
+				[ "$var_line" == "tcurve" ]; then
+			form_line="$line"
+			while true; do
+				if [ "$var_line" == "slp_times" ]; then
+					slp_times+=( ${form_line%%,*} )
+				elif [ "$var_line" == "fcurve" ]; then
+					fcurve+=( ${form_line%%,*} )
+				elif [ "$var_line" == "tcurve" ]; then
+					tcurve+=( ${form_line%%,*} )
+				else
+					echo "Reading array error thingo!"
+				fi
+				if [ "${form_line%%,*}" == "$form_line" ]; then
+					break
+				fi
+				form_line="${form_line#*,*}"
+			done
+		else
+			echo "Error reading config"
+		fi
+	done < "${CONFIG_FILE}"
 }
 
 # FUNCTIONS THAT DEPEND ON STUFF
@@ -133,7 +165,7 @@ check_already_running() {
 
 # Check driver version; I don't really know the right version number
 check_driver() {
-	tmp=`nvidia-settings -v`
+	tmp=`nvidia-settings -v ${DISPLAY_CMD}`
 	if [ "${tmp:27:3}" -lt "304" ]; then
 		echo "You're using an old and unsupported driver, please upgrade it."
 		exit
@@ -145,12 +177,12 @@ check_driver() {
 
 # This looked ugly when it was a lone command in the while loop
 get_temp() {
-	temp["$1"]=`nvidia-settings -q=[gpu:"$1"]/GPUCoreTemp -t`
+	temp["$1"]=`nvidia-settings -q=[gpu:"$1"]/GPUCoreTemp -t ${DISPLAY_CMD}`
 }
 
 # Made this seperate for more code flexibility
 get_tdiff_avg() {
-    tmp="0"
+	tmp="0"
 	for i in `seq 0 $[ $clen - 1 ]`; do
 		tmp="$[ $tmp + $[ ${tcurve[$[ $i + 1 ]]} - ${tcurve[$i]} ] ]"
 	done
@@ -161,57 +193,57 @@ get_tdiff_avg() {
 
 # Seperated for compatability and debugging flexibility
 get_fans_cmd() {
-    num_fans=`nvidia-settings -q fans`
-    if [ "$1" -eq "0" ]; then
-        echo "$num_fans"
-    fi
+	num_fans=`nvidia-settings -q fans ${DISPLAY_CMD}`
+	if [ "$1" -eq "0" ]; then
+		echo "$num_fans"
+	fi
 }
 
 # Same reasoning for get_fans_cmd
 get_gpus_cmd() {
-    num_gpus=`nvidia-settings -q gpus`
-    if [ "$1" -eq "0" ]; then
-        echo "$num_gpus"
-    fi
+	num_gpus=`nvidia-settings -q gpus ${DISPLAY_CMD}`
+	if [ "$1" -eq "0" ]; then
+		echo "$num_gpus"
+	fi
 }
 
 # Finds the total number of fans by cutting the output string
 get_num_fans() {
-    get_fans_cmd "1"
-    tmp="${num_fans%* Fan on*}"
-    if [ "${#tmp}" -gt "2" ]; then
-        num_fans="${num_fans%* Fans on*}"
-    else
-        num_fans="$tmp"
-    fi
-    unset tmp
-    echo "Number of Fans detected: ""$num_fans"
+	get_fans_cmd "1"
+	tmp="${num_fans%* Fan on*}"
+	if [ "${#tmp}" -gt "2" ]; then
+		num_fans="${num_fans%* Fans on*}"
+	else
+		num_fans="$tmp"
+	fi
+	unset tmp
+	echo "Number of Fans detected: ""$num_fans"
 }
 
 # Finds the total number of gpus by cutting the output string
 get_num_gpus() {
-    get_gpus_cmd "1"
-    tmp="${num_gpus%* GPU on*}"
-    if [ "${#tmp}" -gt "2" ]; then
-        num_gpus="${num_gpus%* GPUs on*}"
-    else
-        num_gpus="$tmp"
-    fi
-    unset tmp
-    num_gpus_loop="$[ $num_gpus - 1 ]"
-    echo "Number of GPUs detected: ""$num_gpus"
+	get_gpus_cmd "1"
+	tmp="${num_gpus%* GPU on*}"
+	if [ "${#tmp}" -gt "2" ]; then
+		num_gpus="${num_gpus%* GPUs on*}"
+	else
+		num_gpus="$tmp"
+	fi
+	unset tmp
+	num_gpus_loop="$[ $num_gpus - 1 ]"
+	echo "Number of GPUs detected: ""$num_gpus"
 }
 
 # Enable/disable fan control (if CoolBits is enabled) - see USAGE.md
 set_fan_control() {
 	for i in `seq 0 $1`; do
-		nvidia-settings -a "[gpu:""$i""]/GPUFanControlState=""$2"
+		nvidia-settings -a "[gpu:""$i""]/GPUFanControlState=""$2" ${DISPLAY_CMD}
 	done
 }
 
 # to contain the nvidia-settings command for changing speed
 set_speed() {
-	nvidia-settings -a "[fan:""$1""]/GPUTargetFanSpeed=""$2"
+	nvidia-settings -a "[fan:""$1""]/GPUTargetFanSpeed=""$2" ${DISPLAY_CMD}
 }
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -247,14 +279,14 @@ set_exp_arr() {
 	exp_sp["$min_temp"]="0"
 	for i in `seq $[ $min_temp + 1 ] $max_temp`; do
 		if [ "$i" -gt "${tcurve[-1]}" ]; then
-        	exp_sp["$i"]="100"
-        else
+			exp_sp["$i"]="100"
+		else
 			for j in `seq 0 $clen`; do
-		        if [ "$i" -le "${tcurve[$j]}" ]; then
-		            exp_sp["$i"]="${fcurve[$j]}"
-		            break
-		        fi
-		    done
+				if [ "$i" -le "${tcurve[$j]}" ]; then
+					exp_sp["$i"]="${fcurve[$j]}"
+					break
+				fi
+			done
 		fi
 	done
 }
@@ -271,7 +303,7 @@ set_temporary_diffs() {
 			fi
 		else
 			echo "You've messed up the tdiff_avg_or_max value!"
-    		echo "It is: ""$tdiff_avg_or_max"
+			echo "It is: ""$tdiff_avg_or_max"
 		fi
 		diff_curve+=( "$tmp" )
 		diff_c2+=( "$[ $tmp / 2 ]" )
@@ -287,16 +319,16 @@ set_diffs() {
 
 	for i in `seq $min_temp $max_temp`; do
 		if [ "$i" -gt "${tcurve[-1]}" ]; then
-        	tdiff_hys["$i"]="${diff_curve[-1]}"
-        	tdiff_hys2["$i"]="${diff_c2[-1]}"
-        else
+			tdiff_hys["$i"]="${diff_curve[-1]}"
+			tdiff_hys2["$i"]="${diff_c2[-1]}"
+		else
 			for j in `seq 0 $clen`; do
-		        if [ "$i" -le "${tcurve[$j]}" ]; then
-		            tdiff_hys["$i"]="${diff_curve[$j]}"
-		            tdiff_hys2["$i"]="${diff_c2[$j]}"
-		            break
-		        fi
-		    done
+				if [ "$i" -le "${tcurve[$j]}" ]; then
+					tdiff_hys["$i"]="${diff_curve[$j]}"
+					tdiff_hys2["$i"]="${diff_c2[$j]}"
+					break
+				fi
+			done
 		fi
 	done
 }
@@ -352,7 +384,7 @@ loop_commands() {
 		else
 			# Avoid dumb nvidia-settings calls
 			exp_sp_temp="${exp_sp[${temp[$1]}]}"
-		    if [ "$exp_sp_temp" -ne "${exp_sp[${old_temp[$1]}]}" ]; then
+			if [ "$exp_sp_temp" -ne "${exp_sp[${old_temp[$1]}]}" ]; then
 				set_speed "$1" "$exp_sp_temp"
 			fi
 			old_temp["$1"]="${temp[$1]}"
@@ -370,6 +402,8 @@ loop_commands() {
 start_process() {
 	if [ "$num_gpus" -eq "1" ]; then
 		echo "Started process for 1 GPU and 1 Fan"
+		exp_sp_temp="${exp_sp[${temp[0]}]}"
+		set_speed "0" "$exp_sp_temp"
 
 		while true; do
 			slp="${slp_times[0]}"
@@ -397,9 +431,9 @@ main() {
 
 	check_driver
 	check_arrays
-    get_num_fans
-    get_num_gpus
-    get_tdiff_avg
+	get_num_fans
+	get_num_gpus
+	get_tdiff_avg
 
 	set_diffs
 	set_exp_arr
@@ -421,3 +455,4 @@ main() {
 }
 
 main
+
