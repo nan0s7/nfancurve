@@ -402,9 +402,6 @@ loop_commands() {
 start_process() {
 	if [ "$num_gpus" -eq "1" ]; then
 		echo "Started process for 1 GPU and 1 Fan"
-		exp_sp_temp="${exp_sp[${temp[0]}]}"
-		set_speed "0" "$exp_sp_temp"
-
 		while true; do
 			slp="${slp_times[0]}"
 			loop_commands "0"
