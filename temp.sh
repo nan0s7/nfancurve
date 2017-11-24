@@ -16,7 +16,7 @@ echo
 # ------> fcurve & tcurve
 # ie - when temp<=35 degrees celsius the fan speed=25%
 
-usage="$(basename "$0") [-h] [-c -d] -- A small and lightweight Bash script for using a custom fan curve in Linux for those with an Nvidia GPU.
+usage="Usage: ""$(basename $0)"" [OPTION]...""
 
 where:
 -h  show this help text
@@ -27,38 +27,39 @@ DISPLAY_CMD=""
 CONFIG_FILE="config.txt"
 
 while getopts ":h :c: :d:" opt; do
-  case $opt in
-	c)
-	  CONFIG_FILE="$OPTARG"
-	  ;;
-	d)
-	  DISPLAY_CMD="-c $OPTARG"
-	  ;;
-	h)
-	  echo "$usage" >&2
-	  exit
-	  ;;
-	\?)
-	  echo "Invalid option: -$OPTARG" >&2
-	  ;;
-	:)
-	  echo "Option -$OPTARG requires an argument." >&2
-	  exit
-	  ;;
-  esac
+        case $opt in
+	        c)
+                 CONFIG_FILE="$OPTARG"
+                 ;;
+	        d)
+	         DISPLAY_CMD="-c $OPTARG"
+	         ;;
+	        h)
+	         echo "$usage" >&2
+	         exit
+	         ;;
+                \?)
+	         echo "Invalid option: -$OPTARG" >&2
+	         ;;
+	        :)
+                 echo "Option -$OPTARG requires an argument." >&2
+	         exit
+	         ;;
+        esac
 done
 
 # Make sure the variables are back to normal
 finish() {
 	set_fan_control "$num_gpus_loop" "0"
 	echo "Fan control set back to auto mode."
-	
+
 	unset i
 	unset slp
 	unset tmp
 	unset temp
 	unset line
 	unset clen
+        unset usage
 	unset tdiff
 	unset exp_sp
 	unset tcurve
@@ -75,9 +76,11 @@ finish() {
 	unset tdiff_hys
 	unset tdiff_avg
 	unset tdiff_hys2
-	unset diff_curve
+        unset diff_curve
 	unset process_pid
 	unset exp_sp_temp
+        unset DISPLAY_CMD
+        unset CONFIG_FILE
 	unset num_gpus_loop
 	unset tdiff_avg_or_max
 
