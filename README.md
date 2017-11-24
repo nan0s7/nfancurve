@@ -59,3 +59,4 @@ I ended up catching the command I use to get the current temperature in action a
 - [@aryonoco](https://github.com/aryonoco), for being my multi-GPU guinea pig
 - [@civyshk](https://github.com/civyshk), for making a Python fork
 - [@zJelly](https://github.com/zJelly), for working on an AMD-GPU supporting fork
+- [@dpayne](https://github.com/dpayne), for adding script parameters
