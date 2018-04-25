@@ -50,6 +50,7 @@ I ended up catching the command I use to get the current temperature in action a
 - ~~possibly check the currently installed driver version~~ - _earlier versions used the  GPUCurrentFanSpeed command_
 - add in a **really** detailed guide of how the script works
 - add nouveau support (once they fix Pascal)
+- make config better, and to include more options
 - allow single GPU's other than GPU-0 to be used
 - add support for GPU's that have more than one controllable fan (i.e. >1 fan controller)
 
