@@ -1,12 +1,16 @@
 #!/bin/bash
 echo "~~ nan0s7's fan-speed curve script updater script ~~"
 
+declare -a exempt_vers=( 15 )
+
 finish() {
 	unset git_version
 	unset local_version
 	unset repo_version
 	unset temp_pid
 	unset temp_count
+	unset no_overwrite
+	unset exempt_vers
 }
 trap finish EXIT
 
@@ -47,7 +51,17 @@ update_everything() {
 	    # Downloads the whole repository to make sure nothing is old
 	    `git clone https://github.com/nan0s7/nfancurve`
         if [ -f "config.txt" ]; then
-            mv config.txt nfancurve/config.txt
+            for i in `seq 0 $[ ${exempt_vers[@]} - 1 ]`; do
+                if [ "$local_version" -eq "${exempt_vers[$i]}" ]; then
+                    no_overwrite="1"
+                fi
+            done
+            if [ "$no_overwrite" -eq "0" ]; then
+                mv config.txt nfancurve/config.txt
+            else
+                mv config.txt nfancurve/config_old.txt
+                echo "CONFIG FILE NOT OVERWRITTEN DUE TO STRUCTURE CHANGE"
+            fi
         fi
 	    cd nfancurve
 	    echo "Replacing old files"
