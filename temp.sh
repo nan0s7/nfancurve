@@ -5,7 +5,7 @@ echo "###################################"
 echo
 
 # ------> Editable variables <------
-# Moved to config.txt, read this first for an explanation:
+# Moved to config.sh, read this first for an explanation:
 # ------> min_temp & max_temp
 # ie - if you want something that's not celsius, change the above two
 # ------> tdiff_avg_or_max
@@ -110,42 +110,6 @@ declare -a slp_times=()
 declare -a tdiff_hys2=()
 declare -a diff_curve=()
 
-# Read my config file in a really uninteresting way
-read_config() {
-	while IFS='' read -r line || [[ -n "$line" ]]; do
-		var_line="${line%*:*}"
-		line="${line#*:*}"
-		if [ "$var_line" == "min_temp" ]; then
-			min_temp="$line"
-		elif [ "$var_line" == "max_temp" ]; then
-			max_temp="$line"
-		elif [ "$var_line" == "tdiff_avg_or_max" ]; then
-			tdiff_avg_or_max="$line"
-		elif [ "$var_line" == "slp_times" ] ||
-				[ "$var_line" == "fcurve" ] ||
-				[ "$var_line" == "tcurve" ]; then
-			form_line="$line"
-			while true; do
-				if [ "$var_line" == "slp_times" ]; then
-					slp_times+=( ${form_line%%,*} )
-				elif [ "$var_line" == "fcurve" ]; then
-					fcurve+=( ${form_line%%,*} )
-				elif [ "$var_line" == "tcurve" ]; then
-					tcurve+=( ${form_line%%,*} )
-				else
-					echo "Reading array error thingo!"
-				fi
-				if [ "${form_line%%,*}" == "$form_line" ]; then
-					break
-				fi
-				form_line="${form_line#*,*}"
-			done
-		else
-			echo "Error reading config"
-		fi
-	done < "${CONFIG_FILE}"
-}
-
 # FUNCTIONS THAT DEPEND ON STUFF
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # More than one process can be problematic
@@ -172,8 +136,11 @@ check_driver() {
 	if [ "${tmp:27:3}" -lt "304" ]; then
 		echo "You're using an old and unsupported driver, please upgrade it."
 		exit
-	else
+	elif [ "${tmp:27:3}" -ge "304" ]; then
 		echo "A likely supported driver version was detected."
+	else
+		echo "nvidia-settings doesn't seem to be running..."
+		exit
 	fi
 	unset tmp
 }
@@ -425,11 +392,11 @@ start_process() {
 
 main() {
 	check_already_running
+	check_driver
 
-	read_config
+	source config.sh
 	clen="$[ ${#fcurve[@]} - 1 ]"
 
-	check_driver
 	check_arrays
 	get_num_fans
 	get_num_gpus
