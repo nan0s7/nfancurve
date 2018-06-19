@@ -20,11 +20,11 @@ usage="Usage: ""$(basename $0)"" [OPTION]...""
 
 where:
 -h  show this help text
--c  configuration file (default config.txt)
+-c  configuration file (default config.sh)
 -d  display device string (e.g. \":0\", \"CRT-0\"), defaults to auto detection"
 
 DISPLAY_CMD=""
-CONFIG_FILE="config.txt"
+CONFIG_FILE="config.sh"
 
 while getopts ":h :c: :d:" opt; do
         case $opt in
