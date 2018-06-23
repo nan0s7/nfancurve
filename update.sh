@@ -1,7 +1,7 @@
 #!/bin/bash
 echo "~~ nan0s7's fan-speed curve script updater script ~~"
 
-declare -a exempt_vers=( 15 )
+declare -a exempt_vers=( 15 16 )
 
 finish() {
 	unset git_version
@@ -52,7 +52,7 @@ update_everything() {
 	    `git clone https://github.com/nan0s7/nfancurve`
         if [ -f "config.txt" ]; then
             for i in `seq 0 $[ ${exempt_vers[@]} - 1 ]`; do
-                if [ "$local_version" -eq "${exempt_vers[$i]}" ]; then
+                if [ "$local_version" -le "${exempt_vers[$i]}" ]; then
                     no_overwrite="1"
                 fi
             done
