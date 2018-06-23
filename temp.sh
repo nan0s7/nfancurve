@@ -4,18 +4,6 @@ echo "# nan0s7's fan speed curve script #"
 echo "###################################"
 echo
 
-# ------> Editable variables <------
-# Moved to config.sh, read this first for an explanation:
-# ------> min_temp & max_temp
-# ie - if you want something that's not celsius, change the above two
-# ------> tdiff_avg_or_max
-# ie - 0 to use the average of all temp diffs or 1 to limit the max size
-# that a tdiff value can be (0 = easier to compute, 1 = more flexible)
-# ------> slp_times
-# ie - (needs 2 values) when script's not doing anything
-# ------> fcurve & tcurve
-# ie - when temp<=35 degrees celsius the fan speed=25%
-
 usage="Usage: ""$(basename $0)"" [OPTION]...""
 
 where:
