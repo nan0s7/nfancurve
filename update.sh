@@ -51,7 +51,7 @@ update_everything() {
 	    # Downloads the whole repository to make sure nothing is old
 	    `git clone https://github.com/nan0s7/nfancurve`
         if [ -f "config.txt" ]; then
-            for i in `seq 0 $[ ${exempt_vers[@]} - 1 ]`; do
+            for i in `seq 0 $[ ${#exempt_vers[@]} - 1 ]`; do
                 if [ "$local_version" -le "${exempt_vers[$i]}" ]; then
                     no_overwrite="1"
                 fi
