@@ -1,6 +1,4 @@
 # nfancurve
-A small and lightweight bash script for using a custom fan curve in Linux for those with an Nvidia GPU.
-
 You are probably wondering why I have chosen to write this script in Bash. The reason is very simple; I wanted a script with the minimum number of dependencies possible. To get this script up-and-running you _technically_ only need the **temp.sh** file. If you don't have a certain dependency (i.e. git or procps) you can just remove the code that uses them.
 
 The current version of the script is **version 16.**
@@ -21,7 +19,7 @@ If you need any help configuring my script or don't know how to make it start au
 - now uses a config file that doesn't get overwritten after updates
 
 ## Prerequisites
-- **_Bash_** version 4 and above, or a bash-like shell with the same syntax
+- **_Bash_** version 4 and above, or a bash-like shell with the same syntax (others untested)
 - **_NVIDIA GLX Driver_** version greater than 304
 - **_procps_** in version 14 and greater - you can comment out the function `check_already_running` if you don't have it
 - **_git_** is needed for use of `update.sh` (it'll check for it when it's run)
