@@ -23,5 +23,5 @@ declare -a slp_times=( "7" "5" )
 # by default it's set up so that when the temp is less than or equal to 35
 # degrees, the fan speed will be set to 25%. next, if the temp is between 36
 # and 45, the fan speed should be set to 40%, etc.
-declare -a fcurve=( "25" "40" "55" "70" "85" )
-declare -a tcurve=( "35" "45" "50" "55" "60" )
+declare -a fcurve=( "20" "35" "55" "70" "85" )
+declare -a tcurve=( "30" "40" "50" "60" "70" )
