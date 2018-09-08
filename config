@@ -1,5 +1,3 @@
-#!/bin/bash
-
 # min and max temp are just boundaries for the script; change them if you
 # want to change the scale from Celsius to something else, or if your
 # computer is likely to exceed the default values
