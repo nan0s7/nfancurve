@@ -11,16 +11,16 @@ where:
 -c  configuration file (default config.sh)
 -d  display device string (e.g. \":0\", \"CRT-0\"), defaults to auto detection"
 
-DISPLAY_CMD=""
-CONFIG_FILE="config.sh"
+display_cmd=""
+config_file="$PWD/config"
 
 while getopts ":h :c: :d:" opt; do
         case $opt in
 	        c)
-                 CONFIG_FILE="$OPTARG"
+                 config_file="$OPTARG"
                  ;;
 	        d)
-	         DISPLAY_CMD="-c $OPTARG"
+	         display_cmd="-c $OPTARG"
 	         ;;
 	        h)
 	         echo "$usage" >&2
@@ -67,8 +67,8 @@ finish() {
         unset diff_curve
 	unset process_pid
 	unset exp_sp_temp
-        unset DISPLAY_CMD
-        unset CONFIG_FILE
+        unset display_cmd
+        unset config_file
 	unset num_gpus_loop
 	unset tdiff_avg_or_max
 
@@ -120,7 +120,7 @@ check_already_running() {
 
 # Check driver version; I don't really know the right version number
 check_driver() {
-	tmp=`nvidia-settings -v ${DISPLAY_CMD}`
+	tmp=`nvidia-settings -v ${display_cmd}`
 	if [ "${tmp:27:3}" -lt "304" ]; then
 		echo "You're using an old and unsupported driver, please upgrade it."
 		exit
@@ -135,7 +135,7 @@ check_driver() {
 
 # This looked ugly when it was a lone command in the while loop
 get_temp() {
-	temp["$1"]=`nvidia-settings -q=[gpu:"$1"]/GPUCoreTemp -t ${DISPLAY_CMD}`
+	temp["$1"]=`nvidia-settings -q=[gpu:"$1"]/GPUCoreTemp -t ${display_cmd}`
 }
 
 # Made this seperate for more code flexibility
@@ -151,7 +151,7 @@ get_tdiff_avg() {
 
 # Seperated for compatability and debugging flexibility
 get_fans_cmd() {
-	num_fans=`nvidia-settings -q fans ${DISPLAY_CMD}`
+	num_fans=`nvidia-settings -q fans ${display_cmd}`
 	if [ "$1" -eq "0" ]; then
 		echo "$num_fans"
 	fi
@@ -159,7 +159,7 @@ get_fans_cmd() {
 
 # Same reasoning for get_fans_cmd
 get_gpus_cmd() {
-	num_gpus=`nvidia-settings -q gpus ${DISPLAY_CMD}`
+	num_gpus=`nvidia-settings -q gpus ${display_cmd}`
 	if [ "$1" -eq "0" ]; then
 		echo "$num_gpus"
 	fi
@@ -195,13 +195,13 @@ get_num_gpus() {
 # Enable/disable fan control (if CoolBits is enabled) - see USAGE.md
 set_fan_control() {
 	for i in `seq 0 $1`; do
-		nvidia-settings -a "[gpu:""$i""]/GPUFanControlState=""$2" ${DISPLAY_CMD}
+		nvidia-settings -a "[gpu:""$i""]/GPUFanControlState=""$2" ${display_cmd}
 	done
 }
 
 # to contain the nvidia-settings command for changing speed
 set_speed() {
-	nvidia-settings -a "[fan:""$1""]/GPUTargetFanSpeed=""$2" ${DISPLAY_CMD}
+	nvidia-settings -a "[fan:""$1""]/GPUTargetFanSpeed=""$2" ${display_cmd}
 }
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -382,7 +382,7 @@ main() {
 	check_already_running
 	check_driver
 
-	source config.sh
+	source "$config_file"
 	clen="$[ ${#fcurve[@]} - 1 ]"
 
 	check_arrays
