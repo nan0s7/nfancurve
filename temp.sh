@@ -105,8 +105,6 @@ declare -a diff_curve=()
 check_already_running() {
 	tmp="$(pgrep -c temp)"
 	if [ "$tmp" -eq "2" ]; then
-		echo -e "This code was taken from my other script, called; nron.sh"
-		echo -e "Check out https://github.com/nan0s7/nrunornot for more info!\\n"
 		for i in $(seq 1 "$(( tmp - 1 ))"); do
 			process_pid="$(pgrep -o temp.sh)"
 			echo -e "Killing process... $process_pid\\n"
