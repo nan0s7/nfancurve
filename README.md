@@ -37,12 +37,13 @@ If you need any help configuring my script or don't know how to make it start au
 - `git clone https://github.com/nan0s7/nfancurve`
 - See instructions for **GitHub** for the rest
 
-## Stats
-- **v4** over 4.5h up-time: 0:03.88 CPU time
-- **v7** around 5h: 0:03.22 CPU time
-- **v10** around 5h: 0:02.42 CPU time
+*or just execute this command: `nohup ./temp.sh >/dev/null 2>&1 &`
 
-I ended up catching the command I use to get the current temperature in action and these are the stats: 0:00.06 CPU time. I will say this is quite inaccurate at this scale, and on other times I've caught the command I've seen the statistics vary by a small bit. My current CPU for measuring these stats is an i7 6700K @ 4.4GHz.
+## Honourable mentions
+- [@aryonoco](https://github.com/aryonoco), for being my multi-GPU guinea pig
+- [@civyshk](https://github.com/civyshk), for making a Python fork
+- [@zJelly](https://github.com/zJelly), for working on an AMD-GPU supporting fork
+- [@dpayne](https://github.com/dpayne), for adding useful script parameters
 
 **TODO:**
 - ~~make sure that "CoolBits" is enabled~~ - _not really the scope of this script_
@@ -51,11 +52,3 @@ I ended up catching the command I use to get the current temperature in action a
 - add nouveau support (once they fix Pascal)
 - make config better, and to include more options
 - add support for GPU's that have more than one controllable fan (i.e. >1 fan controller)
-
-*or just execute this command: `nohup ./temp.sh >/dev/null 2>&1 &`
-
-## Honourable mentions
-- [@aryonoco](https://github.com/aryonoco), for being my multi-GPU guinea pig
-- [@civyshk](https://github.com/civyshk), for making a Python fork
-- [@zJelly](https://github.com/zJelly), for working on an AMD-GPU supporting fork
-- [@dpayne](https://github.com/dpayne), for adding useful script parameters
