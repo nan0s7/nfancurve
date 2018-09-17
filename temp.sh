@@ -385,6 +385,11 @@ main() {
 	check_already_running
 	check_driver
 
+	if [ ! -f "$config_file" ]; then
+        >&2 echo "Config file not found."
+        exit 1
+	fi
+	
 	source "$config_file"
 	clen="$(( ${#fcurve[@]} - 1 ))"
 
