@@ -1,8 +1,12 @@
 #!/bin/bash
-echo "###################################"
-echo "# nan0s7's fan speed curve script #"
-echo "###################################"
-echo
+
+prf() { printf %s\\n "$*" ; }
+
+prf "
+###################################
+# nan0s7's fan speed curve script #
+###################################
+"
 
 usage="Usage: $(basename "$0") [OPTION]...""
 
@@ -11,7 +15,7 @@ where:
 -c  configuration file (default config.sh)
 -d  display device string (e.g. \":0\", \"CRT-0\"), defaults to auto detection"
 
-display_cmd=""
+display=""
 config_file="$PWD/config"
 
 while getopts ":h :c: :d:" opt; do
@@ -20,17 +24,17 @@ while getopts ":h :c: :d:" opt; do
                  config_file="$OPTARG"
                  ;;
 	        d)
-	         display_cmd="-c $OPTARG"
+	         display="-c $OPTARG"
 	         ;;
 	        h)
-	         echo "$usage" >&2
+	         prf "$usage" >&2
 	         exit
 	         ;;
                 \?)
-	         echo "Invalid option: -$OPTARG" >&2
+	         prf "Invalid option: -$OPTARG" >&2
 	         ;;
 	        :)
-                 echo "Option -$OPTARG requires an argument." >&2
+                 prf "Option -$OPTARG requires an argument." >&2
 	         exit
 	         ;;
         esac
@@ -39,7 +43,7 @@ done
 # Make sure the variables are back to normal
 finish() {
 	set_fan_control "$num_gpus_loop" "0"
-	echo "Fan control set back to auto mode."
+	prf "Fan control set back to auto mode."
 
 	unset i
 	unset slp
@@ -67,12 +71,12 @@ finish() {
         unset diff_curve
 	unset process_pid
 	unset exp_sp_temp
-        unset display_cmd
+        unset display
         unset config_file
 	unset num_gpus_loop
 	unset tdiff_avg_or_max
 
-	echo "Successfully caught exit & cleared variables!"
+	prf "Successfully caught exit & cleared variables!"
 }
 trap finish EXIT
 
@@ -107,11 +111,11 @@ check_already_running() {
 	if [ "$tmp" -eq "2" ]; then
 		for i in $(seq 1 "$(( tmp - 1 ))"); do
 			process_pid="$(pgrep -o temp.sh)"
-			echo -e "Killing process... $process_pid\\n"
+			prf "Killing process... $process_pid"
 			kill "$process_pid"
 		done
 	else
-		echo -e "No other versions of temp.sh running in background\\n"
+		prf "No other versions of temp.sh running in background"
 	fi
 	unset process_pid
 	unset tmp
@@ -123,12 +127,12 @@ check_already_running() {
 check_driver() {
 	tmp="$(nvidia-settings -v)"
 	if [ "${tmp:27:3}" -lt "304" ]; then
-		echo "You're using an old and unsupported driver, please upgrade it."
+		prf "You're using an unsupported driver, please upgrade it."
 		exit
 	elif [ "${tmp:27:3}" -ge "304" ]; then
-		echo "A likely supported driver version was detected."
+		prf "A likely supported driver version was detected."
 	else
-		echo "nvidia-settings doesn't seem to be running..."
+		prf "nvidia-settings doesn't seem to be running..."
 		exit
 	fi
 #	unset tmp
@@ -136,7 +140,7 @@ check_driver() {
 
 # This looked ugly when it was a lone command in the while loop
 get_temp() {
-	temp["$1"]="$(nvidia-settings -q=[gpu:"$1"]/GPUCoreTemp -t $display_cmd)"
+	temp["$1"]="$(nvidia-settings -q=[gpu:"$1"]/GPUCoreTemp -t $display)"
 }
 
 # Made this seperate for more code flexibility
@@ -147,23 +151,23 @@ get_tdiff_avg() {
 		tmp="$(( tmp + $(( ${tcurve[$(( i + 1 ))]} - ${tcurve[$i]} )) ))"
 	done
 	tdiff_avg="$(( tmp / clen ))"
-	echo "tdiff average: $tdiff_avg"
+	prf "tdiff average: $tdiff_avg"
 #	unset tmp
 }
 
 # Seperated for compatability and debugging flexibility
 get_fans_cmd() {
-	num_fans=$(nvidia-settings -q fans $display_cmd)
+	num_fans=$(nvidia-settings -q fans $display)
 	if [ "$1" -eq "0" ]; then
-		echo "$num_fans"
+		prf "$num_fans"
 	fi
 }
 
 # Same reasoning for get_fans_cmd
 get_gpus_cmd() {
-	num_gpus=$(nvidia-settings -q gpus $display_cmd)
+	num_gpus=$(nvidia-settings -q gpus $display)
 	if [ "$1" -eq "0" ]; then
-		echo "$num_gpus"
+		prf "$num_gpus"
 	fi
 }
 
@@ -177,7 +181,7 @@ get_num_fans() {
 		num_fans="$tmp"
 	fi
 #	unset tmp
-	echo "Number of Fans detected: $num_fans"
+	prf "Number of Fans detected: $num_fans"
 }
 
 # Finds the total number of gpus by cutting the output string
@@ -191,29 +195,29 @@ get_num_gpus() {
 	fi
 #	unset tmp
 	num_gpus_loop="$(( num_gpus - 1 ))"
-	echo "Number of GPUs detected: $num_gpus"
+	prf "Number of GPUs detected: $num_gpus"
 }
 
 # Enable/disable fan control (if CoolBits is enabled) - see USAGE.md
 set_fan_control() {
 	for i in $(seq 0 "$1"); do
-		nvidia-settings -a [gpu:"$i"]/GPUFanControlState="$2" $display_cmd
+		nvidia-settings -a [gpu:"$i"]/GPUFanControlState="$2" $display
 	done
 }
 
 # to contain the nvidia-settings command for changing speed
 set_speed() {
-	nvidia-settings -a [fan:"$1"]/GPUTargetFanSpeed="$2" $display_cmd
+	nvidia-settings -a [fan:"$1"]/GPUTargetFanSpeed="$2" $display
 }
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # Check that the curves are the same length
 check_arrays() {
 	if ! [ "${#fcurve[@]}" -eq "${#tcurve[@]}" ]; then
-		echo "Your two fan curves don't match up - you should fix that."
+		prf "Your two fan curves don't match up - you should fix that."
 		exit
 	else
-		echo -e "The fan curves match up!\\nGood job! :D"
+		prf "The fan curves match up!"
 	fi
 }
 
@@ -263,8 +267,8 @@ set_temporary_diffs() {
 				tmp="$tdiff_avg"
 			fi
 		else
-			echo "You've messed up the tdiff_avg_or_max value!"
-			echo "It is: $tdiff_avg_or_max"
+			prf "You've messed up the tdiff_avg_or_max value!"
+			prf "It is: $tdiff_avg_or_max"
 		fi
 		diff_curve+=( "$tmp" )
 		diff_c2+=( "$(( tmp / 2 ))" )
@@ -302,19 +306,19 @@ set_sleep() {
 
 # Prints important variables for debugging purposes
 echo_info() {
-	tmp="t=""${temp[$1]}"" ot=""${old_temp[$1]}"" tdif=""$tdiff"
-	tmp="$tmp"" slp=""$slp"" gpu=""$1"
-	echo "$tmp"
-	unset tmp
+	prf "
+	t=${temp[$1]} ot=${old_temp[$1]} tdif=$tdiff
+	slp=$slp gpu=$1
+	"
 }
 
 echo_tdiff_hys_selection() {
 	if [ "$tdiff_avg_or_max" -eq "0" ]; then
-		echo "Using average value for temperature difference"
+		prf "Using average value for temperature difference"
 	elif [ "$tdiff_avg_or_max" -eq "1" ]; then
-		echo "Using maximum limit for the temperature difference"
+		prf "Using maximum limit for the temperature difference"
 	else
-		echo "Wrong value for tdiff_avg_or_max!"
+		prf "Wrong value for tdiff_avg_or_max!"
 	fi
 }
 
@@ -362,14 +366,14 @@ loop_commands() {
 # Split while-loops to avoid redundant computation
 start_process() {
 	if [ "$num_gpus" -eq "1" ]; then
-		echo "Started process for 1 GPU and 1 Fan"
+		prf "Started process for 1 GPU and 1 Fan"
 		while true; do
 			slp="${slp_times[0]}"
 			loop_commands "0"
 			sleep "$slp"
 		done
 	else
-		echo "Started process for n-GPUs and n-Fans"
+		prf "Started process for n-GPUs and n-Fans"
 
 		while true; do
 			slp="${slp_times[0]}"
@@ -386,8 +390,8 @@ main() {
 	check_driver
 
 	if [ ! -f "$config_file" ]; then
-        >&2 echo "Config file not found."
-        exit 1
+        	prf "Config file not found." >&2
+	        exit 1
 	fi
 	
 	source "$config_file"
@@ -411,7 +415,7 @@ main() {
 	if [ "$num_fans" -eq "$num_gpus" ]; then
 		start_process
 	else
-		echo "Submit an issue on my GitHub page... happy to fix this :D"
+		prf "Submit an issue on my GitHub page... happy to fix this :D"
 		get_fans_cmd "0"
 		get_gpus_cmd "0"
 	fi
