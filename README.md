@@ -8,12 +8,12 @@ This script is currently set up for Celsius. However, it can easily be modified 
 If you need any help configuring my script or don't know how to make it start automatically check the **USAGE.md** file.
 
 ## Features
-- by default it has an aggressive fan curve profile (lower temps, louder noise)
+- by default it has a slightly aggressive fan curve profile (lower temps, louder noise)
 - uses `nvidia-settings` commands
 - automatically enables/disables GPU fan control (but **not** `CoolBits`)
 - easy to read code, with plentiful comments (beginner friendly)
 - "intelligently" adjusts the time between tempurature readings
-- very lightweight; see stats section for more info
+- very lightweight
 - easy-to-use update script that uses `git`
 - supports multiple GPU control
 - now uses a config file that doesn't get overwritten after updates
@@ -44,7 +44,7 @@ If you need any help configuring my script or don't know how to make it start au
 - [@civyshk](https://github.com/civyshk), for making a Python fork
 - [@zJelly](https://github.com/zJelly), for working on an AMD-GPU supporting fork
 - [@dpayne](https://github.com/dpayne), for adding useful script parameters
-- [@Scrumplex](https://github.com/Scrumplex), adding check to avoid errors when config is missing
+- [@Scrumplex](https://github.com/Scrumplex), for adding check to avoid errors when config is missing
 
 **TODO:**
 - ~~make sure that "CoolBits" is enabled~~ - _not really the scope of this script_
