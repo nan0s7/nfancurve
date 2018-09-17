@@ -104,7 +104,6 @@ declare -a diff_curve=()
 
 # FUNCTIONS THAT DEPEND ON STUFF
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 # DEPENDS: PROCPS
 check_already_running() {
 	tmp="$(pgrep -c temp)"
@@ -118,7 +117,7 @@ check_already_running() {
 		prf "No other versions of temp.sh running in background"
 	fi
 	unset process_pid
-	unset tmp
+#	unset tmp
 }
 
 # Check driver version; I don't really know the right version number
@@ -138,7 +137,6 @@ check_driver() {
 #	unset tmp
 }
 
-# This looked ugly when it was a lone command in the while loop
 get_temp() {
 	temp["$1"]="$(nvidia-settings -q=[gpu:"$1"]/GPUCoreTemp -t $display)"
 }
@@ -155,25 +153,13 @@ get_tdiff_avg() {
 #	unset tmp
 }
 
-# Seperated for compatability and debugging flexibility
-get_fans_cmd() {
-	num_fans=$(nvidia-settings -q fans $display)
-	if [ "$1" -eq "0" ]; then
-		prf "$num_fans"
-	fi
-}
-
-# Same reasoning for get_fans_cmd
-get_gpus_cmd() {
-	num_gpus=$(nvidia-settings -q gpus $display)
-	if [ "$1" -eq "0" ]; then
-		prf "$num_gpus"
-	fi
+get_query() {
+	prf "$(nvidia-settings -q "$1" $display)"
 }
 
 # Finds the total number of fans by cutting the output string
 get_num_fans() {
-	get_fans_cmd "1"
+	num_fans=$(get_query "fans")
 	tmp="${num_fans%* Fan on*}"
 	if [ "${#tmp}" -gt "2" ]; then
 		num_fans="${num_fans%* Fans on*}"
@@ -186,7 +172,7 @@ get_num_fans() {
 
 # Finds the total number of gpus by cutting the output string
 get_num_gpus() {
-	get_gpus_cmd "1"
+	num_gpus=$(get_query "gpus")
 	tmp="${num_gpus%* GPU on*}"
 	if [ "${#tmp}" -gt "2" ]; then
 		num_gpus="${num_gpus%* GPUs on*}"
@@ -275,7 +261,7 @@ set_temporary_diffs() {
 	done
 	diff_curve+=( "$tmp" )
 	diff_c2+=( "$(( tmp / 2 ))" )
-	unset tmp
+#	unset tmp
 }
 
 # exp curves are expanded versions which reduce computation overall
@@ -416,8 +402,8 @@ main() {
 		start_process
 	else
 		prf "Submit an issue on my GitHub page... happy to fix this :D"
-		get_fans_cmd "0"
-		get_gpus_cmd "0"
+		get_query "fans"
+		get_query "gpus"
 	fi
 }
 
