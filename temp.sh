@@ -110,7 +110,7 @@ get_tdiff_avg() {
 	prf "tdiff average: $tdiff_avg"
 }
 
-get_abs_tdiff() {
+get_absolute_tdiff() {
 	if [ "$1" -le "$2" ]; then
 		tdiff="$(( $2 - $1 ))"
 	else
@@ -180,6 +180,7 @@ set_temporary_diffs() {
 		else
 			prf "You've messed up the tdiff_avg_or_max value!"
 			prf "It is: $tdiff_avg_or_max"
+			exit 1
 		fi
 		diff_curve+=( "$tmp" )
 		diff_c2+=( "$(( tmp / 2 ))" )
@@ -214,7 +215,6 @@ set_sleep() {
 	fi
 }
 
-# Prints important variables for debugging purposes
 echo_info() {
 	prf "
 	t=${temp[$1]} ot=${old_temp[$1]} tdif=$tdiff
@@ -222,26 +222,15 @@ echo_info() {
 	"
 }
 
-echo_tdiff_hys_selection() {
-	if [ "$tdiff_avg_or_max" -eq "0" ]; then
-		prf "Using average value for temperature difference"
-	elif [ "$tdiff_avg_or_max" -eq "1" ]; then
-		prf "Using maximum limit for the temperature difference"
-	else
-		prf "Wrong value for tdiff_avg_or_max!"
-	fi
-}
-
 # Main loop stuff
 loop_commands() {
-	# Current temperature query
 	get_temp "$1"
 
 	if [ "${temp[$1]}" -ne "${old_temp[$1]}" ]; then
 		current_temp="${temp[$1]}"
 
 		# Calculate tdiff and make sure it's positive
-		get_abs_tdiff "$current_temp" "${old_temp[$1]}"
+		get_absolute_tdiff "$current_temp" "${old_temp[$1]}"
 
 		if [ "$tdiff" -le "${tdiff_hys2[$current_temp]}" ]; then
 			set_sleep "${slp_times[0]}"
@@ -309,7 +298,6 @@ main() {
 	set_exp_arr
 	set_all_arr_zero "$num_gpus_loop"
 	set_fan_control "$num_gpus_loop" "1"
-	echo_tdiff_hys_selection
 
 	# Haven't added individual fan control yet
 	if [ "$num_fans" -eq "$num_gpus" ]; then
