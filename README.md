@@ -6,7 +6,7 @@ The current version of the script is **version 16**.
 
 This script is currently set up for Celsius. However, it can easily be modified for other temperature scales.
 
-If you need any help configuring my script or don't know how to make it start automatically check the **USAGE.md** file.
+If you need any help configuring my script or don't know how to make it start automatically check the [USAGE.md](USAGE.md) file.
 
 ## Features
 - by default it has a slightly aggressive fan curve profile (lower temps, louder noise)
@@ -31,7 +31,7 @@ If you need any help configuring my script or don't know how to make it start au
 ### GitHub
 - Download the .zip file straight from the GitHubs
 - Extract it somewhere, and open a terminal to that directory
-- Make sure `CoolBits` is enabled (see **USAGE.md**)
+- Make sure `CoolBits` is enabled (see [USAGE.md](USAGE.md))
 - Run `./temp.sh` for a foreground process, or `./update.sh` for a background* one
 
 ### git
