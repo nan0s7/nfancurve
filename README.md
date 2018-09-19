@@ -52,5 +52,5 @@ If you need any help configuring my script or don't know how to make it start au
 - ~~possibly check the currently installed driver version~~ - _earlier versions used the  GPUCurrentFanSpeed command_
 - add in a **really** detailed guide of how the script works
 - add nouveau support (once they fix Pascal)
-- make config better, and to include more options
+- add AMD support?
 - add support for GPU's that have more than one controllable fan (i.e. >1 fan controller)
