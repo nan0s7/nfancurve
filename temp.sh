@@ -8,7 +8,7 @@ prf "
 ###################################
 "
 
-usage="Usage: $(basename "$0") [OPTION]...""
+usage="Usage: $(basename "$0") [OPTION]...
 
 where:
 -h  show this help text
@@ -20,89 +20,37 @@ config_file="$PWD/config"
 
 while getopts ":h :c: :d:" opt; do
         case $opt in
-	        c)
-                 config_file="$OPTARG"
-                 ;;
-	        d)
-	         display="-c $OPTARG"
-	         ;;
-	        h)
-	         prf "$usage" >&2
-	         exit
-	         ;;
-                \?)
-	         prf "Invalid option: -$OPTARG" >&2
-	         ;;
-	        :)
-                 prf "Option -$OPTARG requires an argument." >&2
-	         exit
-	         ;;
+	        c) config_file="$OPTARG";;
+	        d) display="-c $OPTARG";;
+	        h) prf "$usage" >&2; exit;;
+                \?) prf "Invalid option: -$OPTARG" >&2;;
+	        :) prf "Option -$OPTARG requires an argument." >&2; exit;;
         esac
 done
 
-# Make sure the variables are back to normal
+# Catches when something quits the script, and resets fan control
 finish() {
 	set_fan_control "$num_gpus_loop" "0"
-	prf "Fan control set back to auto mode."
-
-	unset i
-	unset slp
-	unset tmp
-	unset temp
-	unset line
-	unset clen
-        unset usage
-	unset tdiff
-	unset exp_sp
-	unset tcurve
-	unset fcurve
-	unset diff_c2
-	unset old_temp
-	unset var_line
-	unset num_gpus
-	unset num_fans
-	unset min_temp
-	unset max_temp
-	unset form_line
-	unset slp_times
-	unset tdiff_hys
-	unset tdiff_avg
-	unset tdiff_hys2
-        unset diff_curve
-	unset process_pid
-	unset exp_sp_temp
-        unset display
-        unset config_file
-	unset num_gpus_loop
-	unset tdiff_avg_or_max
-
-	prf "Successfully caught exit & cleared variables!"
+	prf "Fan control set back to auto mode"
 }
 trap finish EXIT
 
-# Variable initialisation (so don't change these)
 slp="0"
 tdiff="0"
-min_temp=""
 max_temp=""
 num_gpus="0"
 num_fans="0"
 tdiff_avg="0"
 num_gpus_loop="0"
-tdiff_avg_or_max=""
-
 declare -a temp=()
 declare -a exp_sp=()
-declare -a fcurve=()
-declare -a tcurve=()
 declare -a diff_c2=()
 declare -a old_temp=()
 declare -a tdiff_hys=()
-declare -a slp_times=()
 declare -a tdiff_hys2=()
 declare -a diff_curve=()
 
-# FUNCTIONS THAT DEPEND ON STUFF
+# FUNCTIONS THAT REQUIRE CERTAIN DEPENDENCIES TO BE MET
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # DEPENDS: PROCPS
 check_already_running() {
@@ -116,33 +64,43 @@ check_already_running() {
 	else
 		prf "No other versions of temp.sh running in background"
 	fi
-	unset process_pid
-#	unset tmp
 }
 
-# Check driver version; I don't really know the right version number
-# Change string manipulation: could use expr?
 # DEPENDS: NVIDIA-SETTINGS
+# Check driver version; I don't really know the right version number
 check_driver() {
 	tmp="$(nvidia-settings -v)"
 	if [ "${tmp:27:3}" -lt "304" ]; then
 		prf "You're using an unsupported driver, please upgrade it."
-		exit
+		exit 1
 	elif [ "${tmp:27:3}" -ge "304" ]; then
 		prf "A likely supported driver version was detected."
 	else
 		prf "nvidia-settings doesn't seem to be running..."
-		exit
+		exit 1
 	fi
-#	unset tmp
 }
 
 get_temp() {
 	temp["$1"]="$(nvidia-settings -q=[gpu:"$1"]/GPUCoreTemp -t $display)"
 }
 
-# Made this seperate for more code flexibility
-# Does this really depend on stuff though??
+get_query() {
+	prf "$(nvidia-settings -q "$1" $display)"
+}
+
+# Enable/disable fan control (if CoolBits is enabled) - see USAGE.md
+set_fan_control() {
+	for i in $(seq 0 "$1"); do
+		nvidia-settings -a [gpu:"$i"]/GPUFanControlState="$2" $display
+	done
+}
+
+set_speed() {
+	nvidia-settings -a [fan:"$1"]/GPUTargetFanSpeed="$2" $display
+}
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 get_tdiff_avg() {
 	tmp="0"
 	for i in $(seq 0 "$(( clen - 1 ))"); do
@@ -150,11 +108,14 @@ get_tdiff_avg() {
 	done
 	tdiff_avg="$(( tmp / clen ))"
 	prf "tdiff average: $tdiff_avg"
-#	unset tmp
 }
 
-get_query() {
-	prf "$(nvidia-settings -q "$1" $display)"
+get_abs_tdiff() {
+	if [ "$1" -le "$2" ]; then
+		tdiff="$(( $2 - $1 ))"
+	else
+		tdiff="$(( $1 - $2 ))"
+	fi
 }
 
 # Finds the total number of fans by cutting the output string
@@ -166,7 +127,6 @@ get_num_fans() {
 	else
 		num_fans="$tmp"
 	fi
-#	unset tmp
 	prf "Number of Fans detected: $num_fans"
 }
 
@@ -179,44 +139,10 @@ get_num_gpus() {
 	else
 		num_gpus="$tmp"
 	fi
-#	unset tmp
 	num_gpus_loop="$(( num_gpus - 1 ))"
 	prf "Number of GPUs detected: $num_gpus"
 }
 
-# Enable/disable fan control (if CoolBits is enabled) - see USAGE.md
-set_fan_control() {
-	for i in $(seq 0 "$1"); do
-		nvidia-settings -a [gpu:"$i"]/GPUFanControlState="$2" $display
-	done
-}
-
-# to contain the nvidia-settings command for changing speed
-set_speed() {
-	nvidia-settings -a [fan:"$1"]/GPUTargetFanSpeed="$2" $display
-}
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-# Check that the curves are the same length
-check_arrays() {
-	if ! [ "${#fcurve[@]}" -eq "${#tcurve[@]}" ]; then
-		prf "Your two fan curves don't match up - you should fix that."
-		exit
-	else
-		prf "The fan curves match up!"
-	fi
-}
-
-# Cleaner than worrying about if x or y statements in main imo
-get_abs_tdiff() {
-	if [ "$1" -le "$2" ]; then
-		tdiff="$(( $2 - $1 ))"
-	else
-		tdiff="$(( $1 - $2 ))"
-	fi
-}
-
-# Set every existing array to be zero
 set_all_arr_zero() {
 	for i in $(seq 0 "$1"); do
 		temp["$i"]="0"
@@ -242,7 +168,6 @@ set_exp_arr() {
 }
 
 # diff curves are the difference in fan-curve temps for better slp changes
-# Look into changing tmp to be less error prone/repeated/same var over script
 set_temporary_diffs() {
 	for i in $(seq 0 "$(( clen - 1 ))"); do
 		if [ "$tdiff_avg_or_max" -eq "0" ]; then
@@ -261,7 +186,6 @@ set_temporary_diffs() {
 	done
 	diff_curve+=( "$tmp" )
 	diff_c2+=( "$(( tmp / 2 ))" )
-#	unset tmp
 }
 
 # exp curves are expanded versions which reduce computation overall
@@ -308,37 +232,27 @@ echo_tdiff_hys_selection() {
 	fi
 }
 
-# After initial computations some variables are no longer needed
-unset_unused_vars() {
-	unset diff_curve
-	unset diff_c2
-	unset tcurve
-	unset fcurve
-	unset min_temp
-	unset max_temp
-	unset tdiff_avg_or_max
-}
-
 # Main loop stuff
 loop_commands() {
 	# Current temperature query
 	get_temp "$1"
 
 	if [ "${temp[$1]}" -ne "${old_temp[$1]}" ]; then
-		# Calculate tdiff and make sure it's positive
-		get_abs_tdiff "${temp[$1]}" "${old_temp[$1]}" "$1"
+		current_temp="${temp[$1]}"
 
-		if [ "$tdiff" -le "${tdiff_hys2[${temp[$1]}]}" ]; then
+		# Calculate tdiff and make sure it's positive
+		get_abs_tdiff "$current_temp" "${old_temp[$1]}"
+
+		if [ "$tdiff" -le "${tdiff_hys2[$current_temp]}" ]; then
 			set_sleep "${slp_times[0]}"
-		elif [ "$tdiff" -lt "${tdiff_hys[${temp[$1]}]}" ]; then
+		elif [ "$tdiff" -lt "${tdiff_hys[$current_temp]}" ]; then
 			set_sleep "${slp_times[1]}"
 		else
-			# Avoid dumb nvidia-settings calls
-			exp_sp_temp="${exp_sp[${temp[$1]}]}"
-			if [ "$exp_sp_temp" -ne "${exp_sp[${old_temp[$1]}]}" ]; then
-				set_speed "$1" "$exp_sp_temp"
+			new_speed="${exp_sp[$current_temp]}"
+			if [ "$new_speed" -ne "${exp_sp[${old_temp[$1]}]}" ]; then
+				set_speed "$1" "$new_speed"
 			fi
-			old_temp["$1"]="${temp[$1]}"
+			old_temp["$1"]="$current_temp"
 			set_sleep "${slp_times[0]}"
 		fi
 	else
@@ -360,7 +274,6 @@ start_process() {
 		done
 	else
 		prf "Started process for n-GPUs and n-Fans"
-
 		while true; do
 			slp="${slp_times[0]}"
 			for i in $(seq 0 "$num_gpus_loop"); do
@@ -375,27 +288,28 @@ main() {
 	check_already_running
 	check_driver
 
-	if [ ! -f "$config_file" ]; then
+	if ! [ -f "$config_file" ]; then
         	prf "Config file not found." >&2
 	        exit 1
 	fi
 	
 	source "$config_file"
-	clen="$(( ${#fcurve[@]} - 1 ))"
 
-	check_arrays
+	if ! [ "${#fcurve[@]}" -eq "${#tcurve[@]}" ]; then
+		prf "Your two fan curves don't match up!"
+		exit 1
+	fi
+
+	max_temp="${tcurve[-1]}"
+	clen="$(( ${#fcurve[@]} - 1 ))"
 	get_num_fans
 	get_num_gpus
 	get_tdiff_avg
-
 	set_diffs
 	set_exp_arr
-
 	set_all_arr_zero "$num_gpus_loop"
 	set_fan_control "$num_gpus_loop" "1"
-
 	echo_tdiff_hys_selection
-	unset_unused_vars
 
 	# Haven't added individual fan control yet
 	if [ "$num_fans" -eq "$num_gpus" ]; then
