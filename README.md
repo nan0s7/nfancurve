@@ -39,6 +39,11 @@ If you need any help configuring my script or don't know how to make it start au
 - `git clone https://github.com/nan0s7/nfancurve`
 - See instructions for **GitHub** for the rest
 
+### Arch Linux
+There are unofficial AUR packages maintained by [@Scrumplex](https://github.com/Scrumplex).
+- Stable: [nfancurve](https://aur.archlinux.org/packages/nfancurve/)<sup>AUR</sup>
+- Git Master: [nfancurve-git](https://aur.archlinux.org/packages/nfancurve-git/)<sup>AUR</sup>
+
 *or just execute this command: `nohup ./temp.sh >/dev/null 2>&1 &`
 
 ## Honourable mentions
