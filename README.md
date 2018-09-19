@@ -1,7 +1,8 @@
-# nfancurve
-You are probably wondering why I have chosen to write this script in Bash. The reason is very simple; I wanted a script with the minimum number of dependencies possible. To get this script up-and-running you _technically_ only need the **temp.sh** file, and the **config** file. If you don't have a certain dependency (i.e. git or procps) you can just remove the code that uses them.
+nfancurve
+---------
+You are probably wondering why I have chosen to write this script in Bash. The reason is very simple; I wanted a script with the minimum number of dependencies possible. To get this script up-and-running you _technically_ only need the `temp.sh` file, and the `config` file. If you don't have a certain dependency (i.e. git or procps) you can just remove the code that uses them.
 
-The current version of the script is **version 16.**
+The current version of the script is **version 16**.
 
 This script is currently set up for Celsius. However, it can easily be modified for other temperature scales.
 
@@ -27,13 +28,13 @@ If you need any help configuring my script or don't know how to make it start au
 - **_git_** is needed for use of `update.sh` (it'll check for it when it's run)
 
 ## How to install
-**GitHub**
+### GitHub
 - Download the .zip file straight from the GitHubs
 - Extract it somewhere, and open a terminal to that directory
 - Make sure `CoolBits` is enabled (see **USAGE.md**)
 - Run `./temp.sh` for a foreground process, or `./update.sh` for a background* one
 
-**git**
+### git
 - Choose a folder you want to download/install the script in
 - `git clone https://github.com/nan0s7/nfancurve`
 - See instructions for **GitHub** for the rest
@@ -47,7 +48,7 @@ If you need any help configuring my script or don't know how to make it start au
 - [@dpayne](https://github.com/dpayne), for adding useful script parameters
 - [@Scrumplex](https://github.com/Scrumplex), for adding check to avoid errors when config is missing
 
-**TODO:**
+## TODO
 - ~~make sure that "CoolBits" is enabled~~ - _not really the scope of this script_
 - ~~possibly check the currently installed driver version~~ - _earlier versions used the  GPUCurrentFanSpeed command_
 - add in a **really** detailed guide of how the script works
