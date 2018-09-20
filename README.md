@@ -51,7 +51,7 @@ There are unofficial AUR packages maintained by [@Scrumplex](https://github.com/
 - [@civyshk](https://github.com/civyshk), for making a Python fork
 - [@zJelly](https://github.com/zJelly), for working on an AMD-GPU supporting fork
 - [@dpayne](https://github.com/dpayne), for adding useful script parameters
-- [@Scrumplex](https://github.com/Scrumplex), for adding check to avoid errors when config is missing
+- [@Scrumplex](https://github.com/Scrumplex), for adding check to avoid errors when config is missing, and maintaining the AUR package
 
 ## TODO
 - ~~make sure that "CoolBits" is enabled~~ - _not really the scope of this script_
