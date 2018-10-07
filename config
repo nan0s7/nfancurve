@@ -1,8 +1,7 @@
-# min and max temp are just boundaries for the script; change them if you
-#  want to change the scale from Celsius to something else, or if your
-#  computer is likely to exceed the default values
-min_temp="0"
-#max_temp="110" (to be removed)
+# min_temp is the temperature at which every temperature below 25 degrees
+#  the fan speed will be at 0%, and everything above will be whatever the
+#  first speed in fcurve below is (default of 25%)
+min_temp="25"
 
 # if tdiff_avg_or_max is:
 # 0 - script will use the average of all temp deltas to decide whether the
@@ -23,5 +22,7 @@ declare -a slp_times=( "7" "5" )
 #  and 40, the fan speed should be set to 35%, etc.
 # the last temperature value will be the maximum temperature before 100% fan
 #  speed will be set
-declare -a fcurve=( "20" "35" "50" "70" "85" )
-declare -a tcurve=( "30" "40" "50" "65" "75" )
+# you can make the array as big or as small as you require, as long as they
+#  both end up being the same size
+declare -a fcurve=( "25" "40" "55" "70" "85" )
+declare -a tcurve=( "35" "45" "55" "65" "75" )
