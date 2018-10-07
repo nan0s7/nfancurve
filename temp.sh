@@ -12,7 +12,7 @@ usage="Usage: $(basename "$0") [OPTION]...
 
 where:
 -h  show this help text
--c  configuration file (default config.sh)
+-c  configuration file (default: $PWD/config)
 -d  display device string (e.g. \":0\", \"CRT-0\"), defaults to auto detection"
 
 display=""
@@ -35,12 +35,15 @@ finish() {
 }
 trap finish EXIT
 
+gpu_cmd="nvidia-settings"
+#gpu_cmd="/home/scott/Projects/nssim/nssim nvidia-settings"
 slp="0"
 tdiff="0"
-max_temp=""
 num_gpus="0"
 num_fans="0"
+max_temp="0"
 tdiff_avg="0"
+fcurve_len="0"
 num_gpus_loop="0"
 declare -a temp=()
 declare -a exp_sp=()
@@ -69,12 +72,13 @@ check_already_running() {
 # DEPENDS: NVIDIA-SETTINGS
 # Check driver version; I don't really know the right version number
 check_driver() {
+	# Make this more robust
 	tmp="$(nvidia-settings -v)"
 	if [ "${tmp:27:3}" -lt "304" ]; then
-		prf "You're using an unsupported driver, please upgrade it."
+		prf "You're using an unsupported driver, please upgrade it"
 		exit 1
 	elif [ "${tmp:27:3}" -ge "304" ]; then
-		prf "A likely supported driver version was detected."
+		prf "A likely supported driver version was detected"
 	else
 		prf "nvidia-settings doesn't seem to be running..."
 		exit 1
@@ -82,31 +86,31 @@ check_driver() {
 }
 
 get_temp() {
-	temp["$1"]="$(nvidia-settings -q=[gpu:"$1"]/GPUCoreTemp -t $display)"
+	temp["$1"]="$($gpu_cmd -q=[gpu:"$1"]/GPUCoreTemp -t $display)"
 }
 
 get_query() {
-	prf "$(nvidia-settings -q "$1" $display)"
+	prf "$($gpu_cmd -q "$1" $display)"
 }
 
 # Enable/disable fan control (if CoolBits is enabled) - see USAGE.md
 set_fan_control() {
 	for i in $(seq 0 "$1"); do
-		nvidia-settings -a [gpu:"$i"]/GPUFanControlState="$2" $display
+		$gpu_cmd -a [gpu:"$i"]/GPUFanControlState="$2" $display
 	done
 }
 
 set_speed() {
-	nvidia-settings -a [fan:"$1"]/GPUTargetFanSpeed="$2" $display
+	$gpu_cmd -a [fan:"$1"]/GPUTargetFanSpeed="$2" $display
 }
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 get_tdiff_avg() {
-	tmp="0"
-	for i in $(seq 0 "$(( clen - 1 ))"); do
-		tmp="$(( tmp + $(( ${tcurve[$(( i + 1 ))]} - ${tcurve[$i]} )) ))"
+	tmp="$(( tcurve[0] - min_temp ))"
+	for i in $(seq 0 "$(( fcurve_len - 1 ))"); do
+		tmp="$(( tmp + $(( tcurve[$(( i + 1 ))] - tcurve[$i] )) ))"
 	done
-	tdiff_avg="$(( tmp / clen ))"
+	tdiff_avg="$(( tmp / fcurve_len ))"
 	prf "tdiff average: $tdiff_avg"
 }
 
@@ -151,29 +155,24 @@ set_all_arr_zero() {
 }
 
 # Expand speed curve into an arr that reduces comp. time (hopefully)
-set_exp_arr() {
-	exp_sp["$min_temp"]=0
-	for i in $(seq "$(( min_temp + 1 ))" "$max_temp"); do
-		if [ "$i" -gt "${tcurve[-1]}" ]; then
-			exp_sp["$i"]="100"
-		else
-			for j in $(seq 0 "$clen"); do
-				if [ "$i" -le "${tcurve[$j]}" ]; then
-					exp_sp["$i"]="${fcurve[$j]}"
-					break
-				fi
-			done
-		fi
+set_exp_sp() {
+	for i in $(seq 0 "$(( max_temp - min_temp ))"); do
+		for j in $(seq 0 "$fcurve_len"); do
+			if [ "$i" -le "$(( tcurve[$j] - min_temp ))" ]; then
+				exp_sp["$i"]="${fcurve[$j]}"
+				break
+			fi
+		done
 	done
 }
 
-# diff curves are the difference in fan-curve temps for better slp changes
-set_temporary_diffs() {
-	for i in $(seq 0 "$(( clen - 1 ))"); do
+# exp curves are expanded versions which reduce computation overall
+set_diffs() {
+	for i in $(seq 0 "$(( fcurve_len - 1 ))"); do
 		if [ "$tdiff_avg_or_max" -eq "0" ]; then
 			tmp="$tdiff_avg"
 		elif [ "$tdiff_avg_or_max" -eq "1" ]; then
-			tmp="$(( ${tcurve[$(( i + 1 ))]} - ${tcurve[$i]} ))"
+			tmp="$(( tcurve[$(( i + 1 ))] - tcurve[$i] ))"
 			if [ "$tmp" -gt "$tdiff_avg" ]; then
 				tmp="$tdiff_avg"
 			fi
@@ -187,26 +186,39 @@ set_temporary_diffs() {
 	done
 	diff_curve+=( "$tmp" )
 	diff_c2+=( "$(( tmp / 2 ))" )
-}
 
-# exp curves are expanded versions which reduce computation overall
-set_diffs() {
-	set_temporary_diffs
+#	same=0
+#	for i in $(seq 0 "${#diff_curve[@]}"); do
+#		if [ "$i" -gt "0" ]; then
+#			if ! [ "${diff_curve[$i]}" = "${diff_curve[0]}" ]; then
+#				same="1"
+#				break
+#			fi
+#		fi
+#	done
+#	if [ "$same" -eq "1" ]; then
+	old="${diff_curve[0]}"
+	unset diff_curve
+	unset diff_c2
+	diff_curve="$old"
+	diff_c2="$(( old / 2 ))"
+#	fi
 
-	for i in $(seq "$min_temp" "$max_temp"); do
-		if [ "$i" -gt "${tcurve[-1]}" ]; then
-			tdiff_hys["$i"]="${diff_curve[-1]}"
-			tdiff_hys2["$i"]="${diff_c2[-1]}"
-		else
-			for j in $(seq 0 "$clen"); do
-				if [ "$i" -le "${tcurve[$j]}" ]; then
-					tdiff_hys["$i"]="${diff_curve[$j]}"
-					tdiff_hys2["$i"]="${diff_c2[$j]}"
-					break
-				fi
-			done
-		fi
-	done
+#	for i in $(seq "$min_temp" "$(( max_temp - tcurve[0] ))"); do
+#		if [ "$i" -gt "$max_temp" ]; then
+#			tdiff_hys["$i"]="${diff_curve[-1]}"
+#			tdiff_hys2["$i"]="${diff_c2[-1]}"
+#		else
+#			for j in $(seq 0 "$fcurve_len"); do
+#				if [ "$i" -le "${tcurve[$j]}" ]; then
+#					tdiff_hys["$i"]="${diff_curve[$j]}"
+#					tdiff_hys2["$i"]="${diff_c2[$j]}"
+#					break
+#				fi
+#			done
+#		fi
+#	done
+
 }
 
 set_sleep() {
@@ -217,9 +229,11 @@ set_sleep() {
 
 echo_info() {
 	prf "
-	t=${temp[$1]} ot=${old_temp[$1]} tdif=$tdiff
-	slp=$slp gpu=$1
-	"
+	t=${temp[$1]} ot=${old_temp[$1]} td=$tdiff slp=$slp gpu=$1
+	esp=${exp_sp[@]}
+	dc=${diff_curve[@]} dc2=${diff_c2[@]}"
+#	tdh2=${tdiff_hys2[@]}
+#	tdh1=${tdiff_hys[@]}
 }
 
 # Main loop stuff
@@ -227,17 +241,29 @@ loop_commands() {
 	get_temp "$1"
 
 	if [ "${temp[$1]}" -ne "${old_temp[$1]}" ]; then
+		# This whole section can now be done better btw
 		current_temp="${temp[$1]}"
 
 		# Calculate tdiff and make sure it's positive
 		get_absolute_tdiff "$current_temp" "${old_temp[$1]}"
 
-		if [ "$tdiff" -le "${tdiff_hys2[$current_temp]}" ]; then
+#		if [ "$tdiff" -le "${tdiff_hys2[$current_temp]}" ]; then
+#			set_sleep "${slp_times[0]}"
+#		elif [ "$tdiff" -lt "${tdiff_hys[$current_temp]}" ]; then
+#			set_sleep "${slp_times[1]}"
+
+		if [ "$tdiff" -le "$diff_c2" ]; then
 			set_sleep "${slp_times[0]}"
-		elif [ "$tdiff" -lt "${tdiff_hys[$current_temp]}" ]; then
+		elif [ "$tdiff" -lt "$diff_curve" ]; then
 			set_sleep "${slp_times[1]}"
 		else
-			new_speed="${exp_sp[$current_temp]}"
+			if [ "$current_temp" -lt "$min_temp" ]; then
+				new_speed="0"
+			elif [ "$current_temp" -lt "$max_temp" ]; then
+				new_speed="${exp_sp[$(( current_temp - min_temp ))]}"
+			else
+				new_speed="100"
+			fi
 			if [ "$new_speed" -ne "${exp_sp[${old_temp[$1]}]}" ]; then
 				set_speed "$1" "$new_speed"
 			fi
@@ -249,7 +275,7 @@ loop_commands() {
 	fi
 
 	# Uncomment the following line if you want to log stuff
-	#echo_info "$1"
+	echo_info "$1"
 }
 
 # Split while-loops to avoid redundant computation
@@ -282,7 +308,7 @@ main() {
 	        exit 1
 	fi
 	
-	source "$config_file"
+	source "$config_file"; prf "Configuration loaded"
 
 	if ! [ "${#fcurve[@]}" -eq "${#tcurve[@]}" ]; then
 		prf "Your two fan curves don't match up!"
@@ -290,12 +316,12 @@ main() {
 	fi
 
 	max_temp="${tcurve[-1]}"
-	clen="$(( ${#fcurve[@]} - 1 ))"
+	fcurve_len="$(( ${#fcurve[@]} - 1 ))"
 	get_num_fans
 	get_num_gpus
 	get_tdiff_avg
 	set_diffs
-	set_exp_arr
+	set_exp_sp
 	set_all_arr_zero "$num_gpus_loop"
 	set_fan_control "$num_gpus_loop" "1"
 
