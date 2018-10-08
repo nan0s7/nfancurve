@@ -49,8 +49,6 @@ declare -a temp=()
 declare -a exp_sp=()
 declare -a diff_c2=()
 declare -a old_temp=()
-declare -a tdiff_hys=()
-declare -a tdiff_hys2=()
 declare -a diff_curve=()
 
 # FUNCTIONS THAT REQUIRE CERTAIN DEPENDENCIES TO BE MET
@@ -122,28 +120,20 @@ get_absolute_tdiff() {
 	fi
 }
 
-# Finds the total number of fans by cutting the output string
-get_num_fans() {
+# Finds the total number of fans & gpus by cutting the output string
+get_gpu_info() {
 	num_fans=$(get_query "fans")
-	tmp="${num_fans%* Fan on*}"
-	if [ "${#tmp}" -gt "2" ]; then
+	num_fans="${num_fans%* Fan on*}"
+	if [ "${#num_fans}" -gt "2" ]; then
 		num_fans="${num_fans%* Fans on*}"
-	else
-		num_fans="$tmp"
 	fi
-	prf "Number of Fans detected: $num_fans"
-}
-
-# Finds the total number of gpus by cutting the output string
-get_num_gpus() {
 	num_gpus=$(get_query "gpus")
-	tmp="${num_gpus%* GPU on*}"
-	if [ "${#tmp}" -gt "2" ]; then
+	num_gpus="${num_gpus%* GPU on*}"
+	if [ "${#num_gpus}" -gt "2" ]; then
 		num_gpus="${num_gpus%* GPUs on*}"
-	else
-		num_gpus="$tmp"
 	fi
 	num_gpus_loop="$(( num_gpus - 1 ))"
+	prf "Number of Fans detected: $num_fans"
 	prf "Number of GPUs detected: $num_gpus"
 }
 
@@ -187,38 +177,12 @@ set_diffs() {
 	diff_curve+=( "$tmp" )
 	diff_c2+=( "$(( tmp / 2 ))" )
 
-#	same=0
-#	for i in $(seq 0 "${#diff_curve[@]}"); do
-#		if [ "$i" -gt "0" ]; then
-#			if ! [ "${diff_curve[$i]}" = "${diff_curve[0]}" ]; then
-#				same="1"
-#				break
-#			fi
-#		fi
-#	done
-#	if [ "$same" -eq "1" ]; then
+	# can put this into loop above maybe
 	old="${diff_curve[0]}"
 	unset diff_curve
 	unset diff_c2
 	diff_curve="$old"
 	diff_c2="$(( old / 2 ))"
-#	fi
-
-#	for i in $(seq "$min_temp" "$(( max_temp - tcurve[0] ))"); do
-#		if [ "$i" -gt "$max_temp" ]; then
-#			tdiff_hys["$i"]="${diff_curve[-1]}"
-#			tdiff_hys2["$i"]="${diff_c2[-1]}"
-#		else
-#			for j in $(seq 0 "$fcurve_len"); do
-#				if [ "$i" -le "${tcurve[$j]}" ]; then
-#					tdiff_hys["$i"]="${diff_curve[$j]}"
-#					tdiff_hys2["$i"]="${diff_c2[$j]}"
-#					break
-#				fi
-#			done
-#		fi
-#	done
-
 }
 
 set_sleep() {
@@ -230,10 +194,9 @@ set_sleep() {
 echo_info() {
 	prf "
 	t=${temp[$1]} ot=${old_temp[$1]} td=$tdiff slp=$slp gpu=$1
-	esp=${exp_sp[@]}
-	dc=${diff_curve[@]} dc2=${diff_c2[@]}"
-#	tdh2=${tdiff_hys2[@]}
-#	tdh1=${tdiff_hys[@]}
+	esp=${exp_sp[@]} espln=${#exp_sp[@]}
+	dc=${diff_curve[@]} dc2=${diff_c2[@]} mint=$min_temp
+	espct=${exp_sp[$(( current_temp - min_temp ))]}"
 }
 
 # Main loop stuff
@@ -246,11 +209,6 @@ loop_commands() {
 
 		# Calculate tdiff and make sure it's positive
 		get_absolute_tdiff "$current_temp" "${old_temp[$1]}"
-
-#		if [ "$tdiff" -le "${tdiff_hys2[$current_temp]}" ]; then
-#			set_sleep "${slp_times[0]}"
-#		elif [ "$tdiff" -lt "${tdiff_hys[$current_temp]}" ]; then
-#			set_sleep "${slp_times[1]}"
 
 		if [ "$tdiff" -le "$diff_c2" ]; then
 			set_sleep "${slp_times[0]}"
@@ -317,8 +275,7 @@ main() {
 
 	max_temp="${tcurve[-1]}"
 	fcurve_len="$(( ${#fcurve[@]} - 1 ))"
-	get_num_fans
-	get_num_gpus
+	get_gpu_info
 	get_tdiff_avg
 	set_diffs
 	set_exp_sp
