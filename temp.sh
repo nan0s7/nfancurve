@@ -15,8 +15,16 @@ where:
 -c  configuration file (default: $PWD/config)
 -d  display device string (e.g. \":0\", \"CRT-0\"), defaults to auto detection"
 
+SOURCE="${BASH_SOURCE[0]}"
+while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
+  DIR="$( cd -P "$( dirname "$SOURCE" )" >/dev/null && pwd )"
+  SOURCE="$(readlink "$SOURCE")"
+  [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE" # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
+done
+DIR="$( cd -P "$( dirname "$SOURCE" )" >/dev/null && pwd )"
+
 display=""
-config_file="$PWD/config"
+config_file="$DIR/config"
 
 while getopts ":h :c: :d:" opt; do
         case $opt in
