@@ -8,6 +8,23 @@ prf "
 ###################################
 "
 
+slp="0"
+tdiff="0"
+display=""
+num_gpus="0"
+num_fans="0"
+max_temp="0"
+tdiff_avg="0"
+fcurve_len="0"
+num_gpus_loop="0"
+declare -a temp=()
+declare -a exp_sp=()
+declare -a diff_c2=()
+declare -a old_temp=()
+declare -a diff_curve=()
+gpu_cmd="nvidia-settings"
+#gpu_cmd="/home/scott/Projects/nssim/nssim nvidia-settings"
+
 usage="Usage: $(basename "$0") [OPTION]...
 
 where:
@@ -16,14 +33,15 @@ where:
 -d  display device string (e.g. \":0\", \"CRT-0\"), defaults to auto detection"
 
 SOURCE="${BASH_SOURCE[0]}"
-while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
-  DIR="$( cd -P "$( dirname "$SOURCE" )" >/dev/null && pwd )"
-  SOURCE="$(readlink "$SOURCE")"
-  [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE" # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
+# resolve $SOURCE until the file is no longer a symlink
+while [ -h "$SOURCE" ]; do
+	DIR="$( cd -P "$( dirname "$SOURCE" )" >/dev/null && pwd )"
+	SOURCE="$(readlink "$SOURCE")"
+	# if $SOURCE was a relative symlink, we need to resolve it relative to
+	# the path where the symlink file was located
+	[[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE"
 done
 DIR="$( cd -P "$( dirname "$SOURCE" )" >/dev/null && pwd )"
-
-display=""
 config_file="$DIR/config"
 
 while getopts ":h :c: :d:" opt; do
@@ -43,22 +61,6 @@ finish() {
 }
 trap finish EXIT
 
-gpu_cmd="nvidia-settings"
-#gpu_cmd="/home/scott/Projects/nssim/nssim nvidia-settings"
-slp="0"
-tdiff="0"
-num_gpus="0"
-num_fans="0"
-max_temp="0"
-tdiff_avg="0"
-fcurve_len="0"
-num_gpus_loop="0"
-declare -a temp=()
-declare -a exp_sp=()
-declare -a diff_c2=()
-declare -a old_temp=()
-declare -a diff_curve=()
-
 # FUNCTIONS THAT REQUIRE CERTAIN DEPENDENCIES TO BE MET
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # DEPENDS: PROCPS
@@ -76,17 +78,10 @@ check_already_running() {
 }
 
 # DEPENDS: NVIDIA-SETTINGS
-# Check driver version; I don't really know the right version number
 check_driver() {
-	# Make this more robust
-	tmp="$(nvidia-settings -v)"
+	tmp="$($gpu_cmd -v)"
 	if [ "${tmp:27:3}" -lt "304" ]; then
-		prf "You're using an unsupported driver, please upgrade it"
-		exit 1
-	elif [ "${tmp:27:3}" -ge "304" ]; then
-		prf "A likely supported driver version was detected"
-	else
-		prf "nvidia-settings doesn't seem to be running..."
+		prf "Unsupported driver version detected"
 		exit 1
 	fi
 }
@@ -145,6 +140,7 @@ get_gpu_info() {
 	prf "Number of GPUs detected: $num_gpus"
 }
 
+# is this really needed?
 set_all_arr_zero() {
 	for i in $(seq 0 "$1"); do
 		temp["$i"]="0"
