@@ -81,7 +81,7 @@ check_already_running() {
 check_driver() {
 	tmp="$($gpu_cmd -v)"
 	if [ "${tmp:27:3}" -lt "304" ]; then
-		prf "Unsupported driver version detected"
+		prf "Unsupported driver version detected ${tmp:27:3}"
 		exit 1
 	fi
 }
@@ -140,7 +140,6 @@ get_gpu_info() {
 	prf "Number of GPUs detected: $num_gpus"
 }
 
-# is this really needed?
 set_all_arr_zero() {
 	for i in $(seq 0 "$1"); do
 		temp["$i"]="0"
@@ -203,7 +202,6 @@ echo_info() {
 	espct=${exp_sp[$(( current_temp - min_temp ))]}"
 }
 
-# Main loop stuff
 loop_commands() {
 	get_temp "$1"
 
@@ -240,8 +238,36 @@ loop_commands() {
 	echo_info "$1"
 }
 
-# Split while-loops to avoid redundant computation
-start_process() {
+main() {
+	check_already_running
+	check_driver
+
+	if ! [ -f "$config_file" ]; then
+        	prf "Config file not found." >&2
+	        exit 1
+	fi
+	source "$config_file"; prf "Configuration loaded"
+	max_temp="${tcurve[-1]}"
+	fcurve_len="$(( ${#fcurve[@]} - 1 ))"
+
+	if ! [ "${#fcurve[@]}" -eq "${#tcurve[@]}" ]; then
+		prf "Your two fan curves don't match up!"
+		exit 1
+	fi
+	get_gpu_info
+	if ! [ "$num_fans" -eq "$num_gpus" ]; then
+		prf "Submit an issue on my GitHub page... happy to fix this :D"
+		get_query "fans"
+		get_query "gpus"
+		exit 1
+	fi
+
+	get_tdiff_avg
+	set_diffs
+	set_exp_sp
+	set_all_arr_zero "$num_gpus_loop"
+	set_fan_control "$num_gpus_loop" "1"
+
 	if [ "$num_gpus" -eq "1" ]; then
 		prf "Started process for 1 GPU and 1 Fan"
 		while true; do
@@ -258,41 +284,6 @@ start_process() {
 			done
 			sleep "$slp"
 		done
-	fi
-}
-
-main() {
-	check_already_running
-	check_driver
-
-	if ! [ -f "$config_file" ]; then
-        	prf "Config file not found." >&2
-	        exit 1
-	fi
-	
-	source "$config_file"; prf "Configuration loaded"
-
-	if ! [ "${#fcurve[@]}" -eq "${#tcurve[@]}" ]; then
-		prf "Your two fan curves don't match up!"
-		exit 1
-	fi
-
-	max_temp="${tcurve[-1]}"
-	fcurve_len="$(( ${#fcurve[@]} - 1 ))"
-	get_gpu_info
-	get_tdiff_avg
-	set_diffs
-	set_exp_sp
-	set_all_arr_zero "$num_gpus_loop"
-	set_fan_control "$num_gpus_loop" "1"
-
-	# Haven't added individual fan control yet
-	if [ "$num_fans" -eq "$num_gpus" ]; then
-		start_process
-	else
-		prf "Submit an issue on my GitHub page... happy to fix this :D"
-		get_query "fans"
-		get_query "gpus"
 	fi
 }
 
