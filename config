@@ -1,6 +1,6 @@
-# min_temp is the temperature at which every temperature below 25 degrees
-#  the fan speed will be at 0%, and everything above will be whatever the
-#  first speed in fcurve below is (default of 25%)
+# min_temp is the temperature at which every temperature below it will cause
+#  the fan speed to be set to 0%, and everything above will be whatever the
+#  first speed in fcurve is (default of 25%)
 min_temp="25"
 
 # if tdiff_avg_or_max is:
