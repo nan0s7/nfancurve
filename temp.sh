@@ -65,15 +65,12 @@ trap finish EXIT
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # DEPENDS: PROCPS
 check_already_running() {
-	tmp="$(pgrep -c temp)"
+	tmp="$(pgrep -c temp.sh)"
 	if [ "$tmp" -eq "2" ]; then
 		for i in $(seq 1 "$(( tmp - 1 ))"); do
-			process_pid="$(pgrep -o temp.sh)"
-			prf "Killing process... $process_pid"
-			kill "$process_pid"
+			process_pid="$(pgrep -o temp.sh)"; kill "$process_pid"
+			prf "Killed $process_pid"
 		done
-	else
-		prf "No other versions of temp.sh running in background"
 	fi
 }
 
@@ -81,8 +78,7 @@ check_already_running() {
 check_driver() {
 	tmp="$($gpu_cmd -v)"
 	if [ "${tmp:27:3}" -lt "304" ]; then
-		prf "Unsupported driver version detected ${tmp:27:3}"
-		exit 1
+		prf "Unsupported driver version detected ${tmp:27:3}"; exit 1
 	fi
 }
 
@@ -111,8 +107,7 @@ get_tdiff_avg() {
 	for i in $(seq 0 "$(( fcurve_len - 1 ))"); do
 		tmp="$(( tmp + $(( tcurve[$(( i + 1 ))] - tcurve[$i] )) ))"
 	done
-	tdiff_avg="$(( tmp / fcurve_len ))"
-	prf "tdiff average: $tdiff_avg"
+	tdiff_avg="$(( tmp / fcurve_len ))"; prf "tdiff average: $tdiff_avg"
 }
 
 get_absolute_tdiff() {
@@ -130,21 +125,14 @@ get_gpu_info() {
 	if [ "${#num_fans}" -gt "2" ]; then
 		num_fans="${num_fans%* Fans on*}"
 	fi
+	prf "Number of Fans detected: $num_fans"
 	num_gpus=$(get_query "gpus")
 	num_gpus="${num_gpus%* GPU on*}"
 	if [ "${#num_gpus}" -gt "2" ]; then
 		num_gpus="${num_gpus%* GPUs on*}"
 	fi
 	num_gpus_loop="$(( num_gpus - 1 ))"
-	prf "Number of Fans detected: $num_fans"
 	prf "Number of GPUs detected: $num_gpus"
-}
-
-set_all_arr_zero() {
-	for i in $(seq 0 "$1"); do
-		temp["$i"]="0"
-		old_temp["$i"]="0"
-	done
 }
 
 # Expand speed curve into an arr that reduces comp. time (hopefully)
@@ -152,8 +140,7 @@ set_exp_sp() {
 	for i in $(seq 0 "$(( max_temp - min_temp ))"); do
 		for j in $(seq 0 "$fcurve_len"); do
 			if [ "$i" -le "$(( tcurve[$j] - min_temp ))" ]; then
-				exp_sp["$i"]="${fcurve[$j]}"
-				break
+				exp_sp["$i"]="${fcurve[$j]}"; break
 			fi
 		done
 	done
@@ -243,29 +230,28 @@ main() {
 	check_driver
 
 	if ! [ -f "$config_file" ]; then
-        	prf "Config file not found." >&2
-	        exit 1
+        	prf "Config file not found." >&2; exit 1
 	fi
+	if ! [ "${#fcurve[@]}" -eq "${#tcurve[@]}" ]; then
+		prf "Your two fan curves don't match up!"; exit 1
+	fi
+
 	source "$config_file"; prf "Configuration loaded"
 	max_temp="${tcurve[-1]}"
 	fcurve_len="$(( ${#fcurve[@]} - 1 ))"
-
-	if ! [ "${#fcurve[@]}" -eq "${#tcurve[@]}" ]; then
-		prf "Your two fan curves don't match up!"
-		exit 1
-	fi
 	get_gpu_info
+
 	if ! [ "$num_fans" -eq "$num_gpus" ]; then
 		prf "Submit an issue on my GitHub page... happy to fix this :D"
-		get_query "fans"
-		get_query "gpus"
-		exit 1
+		get_query "fans"; get_query "gpus"; exit 1
 	fi
+	for i in $(seq 0 "$num_gpus_loop"); do
+		temp["$num_gpus_loop"]="0"; old_temp["$num_gpus_loop"]="0"
+	done
 
 	get_tdiff_avg
 	set_diffs
 	set_exp_sp
-	set_all_arr_zero "$num_gpus_loop"
 	set_fan_control "$num_gpus_loop" "1"
 
 	if [ "$num_gpus" -eq "1" ]; then
