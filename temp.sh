@@ -149,9 +149,9 @@ set_exp_sp() {
 
 # exp curves are expanded versions which reduce computation overall
 set_diffs() {
-	if [ "$tdiff_avg_or_max" -eq "0" ]; then
+	if [ "$tdiff_avg_max" -eq "0" ]; then
 		tmp="$tdiff_avg"
-	elif [ "$tdiff_avg_or_max" -eq "1" ]; then
+	elif [ "$tdiff_avg_max" -eq "1" ]; then
 		for i in $(seq 0 "$((fcurve_len-1))"); do
 			tmp="$((tcurve[$((i+1))]-tcurve[$i]))"
 			if [ "$tmp" -gt "$tdiff_avg" ]; then
@@ -160,7 +160,7 @@ set_diffs() {
 			diff_c+=("$tmp")
 		done
 	else
-		prf "Wrong tdiff_avg_or_max: $tdiff_avg_or_max"; exit 1
+		prf "Wrong tdiff_avg_max value: $tdiff_avg_max"; exit 1
 	fi
 
 	# can put this into loop above maybe
