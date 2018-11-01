@@ -1,7 +1,7 @@
 # min_temp is the temperature at which every temperature below it will cause
 #  the fan speed to be set to 0%, and everything above will be whatever the
 #  first speed in fcurve is (default of 25%)
-min_temp="25"
+min_t="25"
 
 # if tdiff_avg_or_max is:
 # 0 - script will use the average of all temp deltas to decide whether the
@@ -15,7 +15,7 @@ tdiff_avg_or_max="1"
 # the first value (default: 7) is for long idle periods
 # the second value (default: 5) is if the script detects a change in temps
 #  but isn't great enough to alter the fan speed
-declare -a slp_times=( "7" "5" )
+declare -a s_times=( "7" "5" )
 
 # by default it's set up so that when the temp is less than or equal to 30
 #  degrees, the fan speed will be set to 20%. next, if the temp is between 31
