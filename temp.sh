@@ -83,7 +83,7 @@ check_driver() {
 	fi
 }
 
-get_t() {
+get_temp() {
 	t["$1"]="$($gpu_cmd -q=[gpu:"$1"]/GPUCoreTemp -t $display)"
 }
 
@@ -98,7 +98,7 @@ set_fan_control() {
 	done
 }
 
-set_spd() {
+set_speed() {
 	$gpu_cmd -a [fan:"$1"]/GPUTargetFanSpeed="$2" $display
 }
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -171,7 +171,7 @@ set_diffs() {
 	diff_c2="$((old/2))"
 }
 
-set_s() {
+set_sleep() {
 	if [ "$1" -lt "$s" ]; then
 		s="$1"
 	fi
@@ -186,7 +186,7 @@ echo_info() {
 }
 
 loop_cmds() {
-	get_t "$1"
+	get_temp "$1"
 
 	if [ "${t[$1]}" -ne "${old_t[$1]}" ]; then
 		# This whole section can now be done better btw
@@ -196,9 +196,9 @@ loop_cmds() {
 		get_absolute_tdiff "$current_t" "${old_t[$1]}"
 
 		if [ "$tdiff" -le "$diff_c2" ]; then
-			set_s "${s_times[0]}"
+			set_sleep "${s_times[0]}"
 		elif [ "$tdiff" -lt "$diff_c" ]; then
-			set_s "${s_times[1]}"
+			set_sleep "${s_times[1]}"
 		else
 			if [ "$current_t" -lt "$min_t" ]; then
 				new_spd="0"
@@ -208,13 +208,13 @@ loop_cmds() {
 				new_spd="100"
 			fi
 			if [ "$new_spd" -ne "${exp_sp[${old_t[$1]}]}" ]; then
-				set_spd "$1" "$new_spd"
+				set_speed "$1" "$new_spd"
 			fi
 			old_t["$1"]="$current_t"
-			set_s "${s_times[0]}"
+			set_sleep "${s_times[0]}"
 		fi
 	else
-		set_s "${s_times[0]}"
+		set_sleep "${s_times[0]}"
 	fi
 
 	# Uncomment the following line if you want to log stuff
