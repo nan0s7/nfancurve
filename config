@@ -3,19 +3,12 @@
 #  first speed in fcurve is (default of 25%)
 min_t="25"
 
-# if tdiff_avg_max is:
-# 0 - script will use the average of all temp deltas to decide whether the
-#  script needs to update the fan speed (less computation time)
-# 1 - script will re-calculate the fan speed for all GPU's if one GPU has a
-#  large temp delta, which is better if you use each GPU for tasks with
-#  different levels of intensity
-tdiff_avg_max="1"
-
 # how long the script should wait until checking for a change in temps
 # the first value (default: 7) is for long idle periods
 # the second value (default: 5) is if the script detects a change in temps
 #  but isn't great enough to alter the fan speed
-declare -a s_times=( "7" "5" )
+long_s="7"
+short_s="5"
 
 # by default it's set up so that when the temp is less than or equal to 30
 #  degrees, the fan speed will be set to 20%. next, if the temp is between 31
