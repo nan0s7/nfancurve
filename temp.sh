@@ -3,25 +3,26 @@
 prf() { printf %s\\n "$*" ; }
 
 prf "
-###################################
-# nan0s7's fan speed curve script #
-###################################
+###########################################
+#     nan0s7's fan speed curve script     #
+###########################################
 "
 
 s="0"
+gpu="0"
+max_t="0"
 tdiff="0"
 display=""
 num_gpus="0"
 num_fans="0"
-max_t="0"
 tdiff_avg="0"
+current_t="0"
+check_diff=""
+check_diff2=""
 fcurve_len="0"
 num_gpus_loop="0"
-declare -a t=()
 declare -a exp_sp=()
-declare -a diff_c2=()
 declare -a old_t=()
-declare -a diff_c=()
 gpu_cmd="nvidia-settings"
 #gpu_cmd="/home/scott/Projects/nssim/nssim nvidia-settings"
 
@@ -69,8 +70,7 @@ check_already_running() {
 	if [ "$tmp" -eq "2" ]; then
 		for i in $(seq 1 "$((tmp-1))"); do
 			process_pid="$(pgrep -o temp.sh)"
-			kill "$process_pid"
-			prf "Killed $process_pid"
+			kill "$process_pid"; prf "Killed $process_pid"
 		done
 	fi
 }
@@ -84,7 +84,7 @@ check_driver() {
 }
 
 get_temp() {
-	t["$1"]="$($gpu_cmd -q=[gpu:"$1"]/GPUCoreTemp -t $display)"
+	current_t="$($gpu_cmd -q=[gpu:"$gpu"]/GPUCoreTemp -t $display)"
 }
 
 get_query() {
@@ -99,23 +99,24 @@ set_fan_control() {
 }
 
 set_speed() {
-	$gpu_cmd -a [fan:"$1"]/GPUTargetFanSpeed="$2" $display
+	$gpu_cmd -a [fan:"$gpu"]/GPUTargetFanSpeed="$1" $display
 }
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 get_tdiff_avg() {
-	tmp="$((tcurve[0]-min_t))"
+	tmp="0"
 	for i in $(seq 0 "$((fcurve_len-1))"); do
-		tmp="$((tmp+$((tcurve[$((i+1))]-tcurve[$i]))))"
+		tmp="$((tmp+tcurve[$((i+1))]-tcurve[$i]))"
 	done
 	tdiff_avg="$((tmp/fcurve_len))"; prf "tdiff average: $tdiff_avg"
 }
 
 get_absolute_tdiff() {
-	if [ "$1" -le "$2" ]; then
-		tdiff="$(($2-$1))"
+	tmp="${old_t[$gpu]}"
+	if [ "$current_t" -le "$tmp" ]; then
+		tdiff="$((tmp-current_t))"
 	else
-		tdiff="$(($1-$2))"
+		tdiff="$((current_t-tmp))"
 	fi
 }
 
@@ -147,30 +148,6 @@ set_exp_sp() {
 	done
 }
 
-# exp curves are expanded versions which reduce computation overall
-set_diffs() {
-	if [ "$tdiff_avg_max" -eq "0" ]; then
-		tmp="$tdiff_avg"
-	elif [ "$tdiff_avg_max" -eq "1" ]; then
-		for i in $(seq 0 "$((fcurve_len-1))"); do
-			tmp="$((tcurve[$((i+1))]-tcurve[$i]))"
-			if [ "$tmp" -gt "$tdiff_avg" ]; then
-				tmp="$tdiff_avg"
-			fi
-			diff_c+=("$tmp")
-		done
-	else
-		prf "Wrong tdiff_avg_max value: $tdiff_avg_max"; exit 1
-	fi
-
-	# can put this into loop above maybe
-	diff_c+=("$tmp")
-	old="${diff_c[0]}"
-	unset diff_c
-	diff_c="$old"
-	diff_c2="$((old/2))"
-}
-
 set_sleep() {
 	if [ "$1" -lt "$s" ]; then
 		s="$1"
@@ -179,26 +156,23 @@ set_sleep() {
 
 echo_info() {
 	prf "
-	temp=${t[$1]} oldt=${old_t[$1]} td=$tdiff slp=$s gpu=$1
+	temp=$current_t oldt=${old_t[$gpu]} td=$tdiff slp=$s gpu=$gpu
 	esp=${exp_sp[@]} espln=${#exp_sp[@]}
-	dc=${diff_c[@]} dc2=${diff_c2[@]} mint=$min_t
-	espct=${exp_sp[$((current_t-min_t))]}"
+	cd=$check_diff cd2=$check_diff2 mint=$min_t
+	esp_current_t=${exp_sp[$((current_t-min_t))]}"
 }
 
 loop_cmds() {
-	get_temp "$1"
+	get_temp
 
-	if [ "${t[$1]}" -ne "${old_t[$1]}" ]; then
-		# This whole section can now be done better btw
-		current_t="${t[$1]}"
+	if [ "$current_t" -ne "${old_t[$gpu]}" ]; then
+		# Calculate difference and make sure it's positive
+		get_absolute_tdiff
 
-		# Calculate tdiff and make sure it's positive
-		get_absolute_tdiff "$current_t" "${old_t[$1]}"
-
-		if [ "$tdiff" -le "$diff_c2" ]; then
-			set_sleep "${s_times[0]}"
-		elif [ "$tdiff" -lt "$diff_c" ]; then
-			set_sleep "${s_times[1]}"
+		if [ "$tdiff" -le "$check_diff2" ]; then
+			set_sleep "$long_s"
+		elif [ "$tdiff" -lt "$check_diff" ]; then
+			set_sleep "$short_s"
 		else
 			if [ "$current_t" -lt "$min_t" ]; then
 				new_spd="0"
@@ -207,18 +181,18 @@ loop_cmds() {
 			else
 				new_spd="100"
 			fi
-			if [ "$new_spd" -ne "${exp_sp[${old_t[$1]}]}" ]; then
-				set_speed "$1" "$new_spd"
+			if [ "$new_spd" -ne "${exp_sp[${old_t[$gpu]}]}" ]; then
+				set_speed "$new_spd"
 			fi
-			old_t["$1"]="$current_t"
-			set_sleep "${s_times[0]}"
+			old_t["$gpu"]="$current_t"
+			set_sleep "$long_s"
 		fi
 	else
-		set_sleep "${s_times[0]}"
+		set_sleep "$long_s"
 	fi
 
 	# Uncomment the following line if you want to log stuff
-	echo_info "$1"
+	echo_info
 }
 
 main() {
@@ -242,28 +216,29 @@ main() {
 		get_query "fans"; get_query "gpus"; exit 1
 	fi
 	for i in $(seq 0 "$num_gpus_loop"); do
-		t["$num_gpus_loop"]="0"
 		old_t["$num_gpus_loop"]="0"
 	done
 
 	get_tdiff_avg
-	set_diffs
+	check_diff="$tdiff_avg"
+	check_diff2="$((tdiff_avg-long_s+short_s-1))"
 	set_exp_sp
 	set_fan_control "$num_gpus_loop" "1"
 
 	if [ "$num_gpus" -eq "1" ]; then
 		prf "Started process for 1 GPU and 1 Fan"
 		while true; do
-			s="${s_times[0]}"
-			loop_cmds "0"
+			s="$long_s"
+			loop_cmds
 			sleep "$s"
 		done
 	else
 		prf "Started process for n-GPUs and n-Fans"
 		while true; do
-			s="${s_times[0]}"
+			s="$long_s"
 			for i in $(seq 0 "$num_gpus_loop"); do
-				loop_cmds "$i"
+				gpus="$i"
+				loop_cmds
 			done
 			sleep "$s"
 		done
