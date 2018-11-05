@@ -13,6 +13,7 @@ gpu="0"
 max_t="0"
 tdiff="0"
 display=""
+new_spd="0"
 num_gpus="0"
 num_fans="0"
 tdiff_avg="0"
@@ -21,8 +22,8 @@ check_diff=""
 check_diff2=""
 fcurve_len="0"
 num_gpus_loop="0"
-declare -a exp_sp=()
 declare -a old_t=()
+declare -a exp_sp=()
 gpu_cmd="nvidia-settings"
 #gpu_cmd="/home/scott/Projects/nssim/nssim nvidia-settings"
 
