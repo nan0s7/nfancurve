@@ -3,9 +3,9 @@
 prf() { printf %s\\n "$*" ; }
 
 s="0"; gpu="0"; max_t="0"; tdiff="0"; display=""; new_spd="0"; num_gpus="0"
-num_fans="0"; tdiff_avg="0"; current_t="0"; check_diff=""; check_diff2=""
+num_fans="0"; tdiff_avg="0"; current_t="0"; check_diff=""; check_diff2=""; z=$0
 fcurve_len="0"; num_gpus_loop="0"; declare -a old_t=(); declare -a exp_sp=()
-target=$0; fname=""; CDPATH=""; gpu_cmd="nvidia-settings"
+fname=""; CDPATH=""; gpu_cmd="nvidia-settings"
 #gpu_cmd="/home/scott/Projects/nssim/nssim nvidia-settings"
 
 prf "
@@ -23,17 +23,23 @@ where:
 { \unalias command; \unset -f command; } >/dev/null 2>&1
 [ -n "$ZSH_VERSION" ] && options[POSIX_BUILTINS]=on
 while :; do
-	[ -L "$target" ] || [ -e "$target" ] || {
-		command prf "ERROR: '$target' does not exist." >&2; return 1; }
-	command cd "$(command dirname -- "$target")"
-	fname=$(command basename -- "$target")
+	[ -L "$z" ] || [ -e "$z" ] || { prf "'$z' is invalid" >&2; return 1; }
+	command cd "$(command dirname -- "$z")"
+	fname=$(command basename -- "$z")
 	[ "$fname" = '/' ] && fname=''
-	if [ -L "$fname" ]; then target=$(command ls -l "$fname")
-		target=${target#* -> }; continue; fi; break
-done; conf_file=$(command pwd -P)
-if [ "$fname" = '.' ]; then conf_file=${conf_file%/}
-elif [ "$fname" = '..' ]; then conf_file=$(command dirname -- "${conf_file}")
-else conf_file=${conf_file%/}/$fname; fi
+	if [ -L "$fname" ]; then
+		z=$(command ls -l "$fname"); z=${z#* -> }; continue
+	fi
+	break
+done
+conf_file=$(command pwd -P)
+if [ "$fname" = '.' ]; then
+	conf_file=${conf_file%/}
+elif [ "$fname" = '..' ]; then
+	conf_file=$(command dirname -- "${conf_file}")
+else
+	conf_file=${conf_file%/}/$fname
+fi
 conf_file=$(dirname -- "$conf_file")"/config"
 
 while getopts ":h :c: :d:" opt; do
