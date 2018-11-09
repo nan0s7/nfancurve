@@ -3,15 +3,15 @@
 prf() { printf %s\\n "$*" ; }
 
 s="0"; gpu="0"; max_t="0"; tdiff="0"; display=""; new_spd="0"; num_gpus="0"
-num_fans="0"; tdiff_avg="0"; current_t="0"; check_diff=""; check_diff2=""; z=$0
+num_fans="0"; current_t="0"; check_diff=""; check_diff2=""; z=$0; fname=""
 fcurve_len="0"; num_gpus_loop="0"; declare -a old_t=(); declare -a exp_sp=()
-fname=""; CDPATH=""; gpu_cmd="nvidia-settings"
+CDPATH=""; gpu_cmd="nvidia-settings"
 #gpu_cmd="/home/scott/Projects/nssim/nssim nvidia-settings"
 
 prf "
-###########################################
-#     nan0s7's fan speed curve script     #
-###########################################
+################################################################
+#   nan0s7's script for automatically managing GPU fan speed   #
+################################################################
 "
 usage="Usage: $(basename "$0") [OPTION]...
 
@@ -23,7 +23,7 @@ where:
 { \unalias command; \unset -f command; } >/dev/null 2>&1
 [ -n "$ZSH_VERSION" ] && options[POSIX_BUILTINS]=on
 while :; do
-	[ -L "$z" ] || [ -e "$z" ] || { prf "'$z' is invalid" >&2; return 1; }
+	[ -L "$z" ] || [ -e "$z" ] || { prf "'$z' is invalid" >&2; exit 1; }
 	command cd "$(command dirname -- "$z")"
 	fname=$(command basename -- "$z")
 	[ "$fname" = '/' ] && fname=''
@@ -100,14 +100,6 @@ set_speed() {
 }
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-get_tdiff_avg() {
-	tmp="0"
-	for i in $(seq 0 "$((fcurve_len-1))"); do
-		tmp="$((tmp+tcurve[$((i+1))]-tcurve[$i]))"
-	done
-	tdiff_avg="$((tmp/fcurve_len))"; prf "tdiff average: $tdiff_avg"
-}
-
 get_absolute_tdiff() {
 	tmp="${old_t[$gpu]}"
 	if [ "$current_t" -le "$tmp" ]; then
@@ -115,34 +107,6 @@ get_absolute_tdiff() {
 	else
 		tdiff="$((current_t-tmp))"
 	fi
-}
-
-# Finds the total number of fans & gpus by cutting the output string
-get_gpu_info() {
-	num_fans=$(get_query "fans")
-	num_fans="${num_fans%* Fan on*}"
-	if [ "${#num_fans}" -gt "2" ]; then
-		num_fans="${num_fans%* Fans on*}"
-	fi
-	prf "Number of Fans detected: $num_fans"
-	num_gpus=$(get_query "gpus")
-	num_gpus="${num_gpus%* GPU on*}"
-	if [ "${#num_gpus}" -gt "2" ]; then
-		num_gpus="${num_gpus%* GPUs on*}"
-	fi
-	num_gpus_loop="$((num_gpus-1))"
-	prf "Number of GPUs detected: $num_gpus"
-}
-
-# Expand speed curve into an arr that reduces comp. time (hopefully)
-set_exp_sp() {
-	for i in $(seq 0 "$((max_t-min_t))"); do
-		for j in $(seq 0 "$fcurve_len"); do
-			if [ "$i" -le "$((tcurve[$j]-min_t))" ]; then
-				exp_sp["$i"]="${fcurve[$j]}"; break
-			fi
-		done
-	done
 }
 
 set_sleep() {
@@ -192,54 +156,72 @@ loop_cmds() {
 	echo_info
 }
 
-main() {
-	check_already_running
-	check_driver
+check_already_running
+check_driver
 
-	if ! [ -f "$conf_file" ]; then
-        	prf "Config file not found." >&2; exit 1
-	fi
-	if ! [ "${#fcurve[@]}" -eq "${#tcurve[@]}" ]; then
-		prf "Your two fan curves don't match up!"; exit 1
-	fi
+if ! [ -f "$conf_file" ]; then
+	prf "Config file not found." >&2; exit 1
+fi
+if ! [ "${#fcurve[@]}" -eq "${#tcurve[@]}" ]; then
+	prf "Your two fan curves don't match up!"; exit 1
+fi
 
-	source "$conf_file"; prf "Configuration file: $conf_file"
-	max_t="${tcurve[-1]}"
-	fcurve_len="$((${#fcurve[@]}-1))"
-	get_gpu_info
+source "$conf_file"; prf "Configuration file: $conf_file"
+max_t="${tcurve[-1]}"
+fcurve_len="$((${#fcurve[@]}-1))"
 
-	if ! [ "$num_fans" -eq "$num_gpus" ]; then
-		prf "Submit an issue on my GitHub page... happy to fix this :D"
-		get_query "fans"; get_query "gpus"; exit 1
-	fi
-	for i in $(seq 0 "$num_gpus_loop"); do
-		old_t["$num_gpus_loop"]="0"
+num_fans=$(get_query "fans"); num_fans="${num_fans%* Fan on*}"
+if [ "${#num_fans}" -gt "2" ]; then
+	num_fans="${num_fans%* Fans on*}"
+fi
+prf "Number of Fans detected: $num_fans"
+
+num_gpus=$(get_query "gpus"); num_gpus="${num_gpus%* GPU on*}"
+if [ "${#num_gpus}" -gt "2" ]; then
+	num_gpus="${num_gpus%* GPUs on*}"
+fi
+num_gpus_loop="$((num_gpus-1))"
+prf "Number of GPUs detected: $num_gpus"
+
+if ! [ "$num_fans" -eq "$num_gpus" ]; then
+	prf "Submit an issue on my GitHub page... happy to fix this :D"
+	get_query "fans"; get_query "gpus"; exit 1
+fi
+for i in $(seq 0 "$num_gpus_loop"); do
+	old_t["$num_gpus_loop"]="0"
+done
+
+for i in $(seq 0 "$((fcurve_len-1))"); do
+	check_diff="$((check_diff+tcurve[$((i+1))]-tcurve[$i]))"
+done
+check_diff="$((check_diff/fcurve_len))"; prf "tdiff average: $check_diff"
+check_diff2="$((check_diff-long_s+short_s-1))"
+set_fan_control "$num_gpus_loop" "1"
+
+# Expand speed curve into an arr that reduces comp. time (hopefully)
+for i in $(seq 0 "$((max_t-min_t))"); do
+	for j in $(seq 0 "$fcurve_len"); do
+		if [ "$i" -le "$((tcurve[$j]-min_t))" ]; then
+			exp_sp["$i"]="${fcurve[$j]}"; break
+		fi
 	done
+done
 
-	get_tdiff_avg
-	check_diff="$tdiff_avg"
-	check_diff2="$((tdiff_avg-long_s+short_s-1))"
-	set_exp_sp
-	set_fan_control "$num_gpus_loop" "1"
-
-	if [ "$num_gpus" -eq "1" ]; then
-		prf "Started process for 1 GPU and 1 Fan"
-		while true; do
-			s="$long_s"
+if [ "$num_gpus" -eq "1" ]; then
+	prf "Started process for 1 GPU and 1 Fan"
+	while true; do
+		s="$long_s"
+		loop_cmds
+		sleep "$s"
+	done
+else
+	prf "Started process for n-GPUs and n-Fans"
+	while true; do
+		s="$long_s"
+		for i in $(seq 0 "$num_gpus_loop"); do
+			gpus="$i"
 			loop_cmds
-			sleep "$s"
 		done
-	else
-		prf "Started process for n-GPUs and n-Fans"
-		while true; do
-			s="$long_s"
-			for i in $(seq 0 "$num_gpus_loop"); do
-				gpus="$i"
-				loop_cmds
-			done
-			sleep "$s"
-		done
-	fi
-}
-
-main
+		sleep "$s"
+	done
+fi
