@@ -2,31 +2,17 @@
 
 prf() { printf %s\\n "$*" ; }
 
+s="0"; gpu="0"; max_t="0"; tdiff="0"; display=""; new_spd="0"; num_gpus="0"
+num_fans="0"; tdiff_avg="0"; current_t="0"; check_diff=""; check_diff2=""
+fcurve_len="0"; num_gpus_loop="0"; declare -a old_t=(); declare -a exp_sp=()
+target=$0; fname=""; CDPATH=""; gpu_cmd="nvidia-settings"
+#gpu_cmd="/home/scott/Projects/nssim/nssim nvidia-settings"
+
 prf "
 ###########################################
 #     nan0s7's fan speed curve script     #
 ###########################################
 "
-
-s="0"
-gpu="0"
-max_t="0"
-tdiff="0"
-display=""
-new_spd="0"
-num_gpus="0"
-num_fans="0"
-tdiff_avg="0"
-current_t="0"
-check_diff=""
-check_diff2=""
-fcurve_len="0"
-num_gpus_loop="0"
-declare -a old_t=()
-declare -a exp_sp=()
-gpu_cmd="nvidia-settings"
-#gpu_cmd="/home/scott/Projects/nssim/nssim nvidia-settings"
-
 usage="Usage: $(basename "$0") [OPTION]...
 
 where:
@@ -34,21 +20,25 @@ where:
 -c  configuration file (default: $PWD/config)
 -d  display device string (e.g. \":0\", \"CRT-0\"), defaults to auto detection"
 
-SOURCE="${BASH_SOURCE[0]}"
-# resolve $SOURCE until the file is no longer a symlink
-while [ -h "$SOURCE" ]; do
-	DIR="$( cd -P "$( dirname "$SOURCE" )" >/dev/null && pwd )"
-	SOURCE="$(readlink "$SOURCE")"
-	# if $SOURCE was a relative symlink, we need to resolve it relative to
-	# the path where the symlink file was located
-	[[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE"
-done
-DIR="$( cd -P "$( dirname "$SOURCE" )" >/dev/null && pwd )"
-config_file="$DIR/config"
+{ \unalias command; \unset -f command; } >/dev/null 2>&1
+[ -n "$ZSH_VERSION" ] && options[POSIX_BUILTINS]=on
+while :; do
+	[ -L "$target" ] || [ -e "$target" ] || {
+		command prf "ERROR: '$target' does not exist." >&2; return 1; }
+	command cd "$(command dirname -- "$target")"
+	fname=$(command basename -- "$target")
+	[ "$fname" = '/' ] && fname=''
+	if [ -L "$fname" ]; then target=$(command ls -l "$fname")
+		target=${target#* -> }; continue; fi; break
+done; conf_file=$(command pwd -P)
+if [ "$fname" = '.' ]; then conf_file=${conf_file%/}
+elif [ "$fname" = '..' ]; then conf_file=$(command dirname -- "${conf_file}")
+else conf_file=${conf_file%/}/$fname; fi
+conf_file=$(dirname -- "$conf_file")"/config"
 
 while getopts ":h :c: :d:" opt; do
 	case $opt in
-		c) config_file="$OPTARG";;
+		c) conf_file="$OPTARG";;
 		d) display="-c $OPTARG";;
 		h) prf "$usage" >&2; exit;;
 		\?) prf "Invalid option: -$OPTARG" >&2;;
@@ -68,7 +58,7 @@ trap finish EXIT
 # DEPENDS: PROCPS
 check_already_running() {
 	tmp="$(pgrep -c temp.sh)"
-	if [ "$tmp" -eq "2" ]; then
+	if [ "$tmp" -ge "2" ]; then
 		for i in $(seq 1 "$((tmp-1))"); do
 			process_pid="$(pgrep -o temp.sh)"
 			kill "$process_pid"; prf "Killed $process_pid"
@@ -200,14 +190,14 @@ main() {
 	check_already_running
 	check_driver
 
-	if ! [ -f "$config_file" ]; then
+	if ! [ -f "$conf_file" ]; then
         	prf "Config file not found." >&2; exit 1
 	fi
 	if ! [ "${#fcurve[@]}" -eq "${#tcurve[@]}" ]; then
 		prf "Your two fan curves don't match up!"; exit 1
 	fi
 
-	source "$config_file"; prf "Configuration loaded"
+	source "$conf_file"; prf "Configuration file: $conf_file"
 	max_t="${tcurve[-1]}"
 	fcurve_len="$((${#fcurve[@]}-1))"
 	get_gpu_info
