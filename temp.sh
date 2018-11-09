@@ -9,9 +9,9 @@ CDPATH=""; gpu_cmd="nvidia-settings"
 #gpu_cmd="/home/scott/Projects/nssim/nssim nvidia-settings"
 
 prf "
-################################################################
-#   nan0s7's script for automatically managing GPU fan speed   #
-################################################################
+################################################################################
+#          nan0s7's script for automatically managing GPU fan speed            #
+################################################################################
 "
 usage="Usage: $(basename "$0") [OPTION]...
 
@@ -116,11 +116,10 @@ set_sleep() {
 }
 
 echo_info() {
-	prf "
-	temp=$current_t oldt=${old_t[$gpu]} td=$tdiff slp=$s gpu=$gpu
-	esp=${exp_sp[@]} espln=${#exp_sp[@]}
+	prf "	temp=$current_t oldt=${old_t[$gpu]} td=$tdiff slp=$s gpu=$gpu
+	esp=${exp_sp[@]} espln=${#exp_sp[@]} ect=${exp_sp[$((current_t-min_t))]}
 	cd=$check_diff cd2=$check_diff2 mint=$min_t
-	esp_current_t=${exp_sp[$((current_t-min_t))]}"
+	"
 }
 
 loop_cmds() {
@@ -174,14 +173,14 @@ num_fans=$(get_query "fans"); num_fans="${num_fans%* Fan on*}"
 if [ "${#num_fans}" -gt "2" ]; then
 	num_fans="${num_fans%* Fans on*}"
 fi
-prf "Number of Fans detected: $num_fans"
+prf "Number of Fans detected:"$num_fans
 
 num_gpus=$(get_query "gpus"); num_gpus="${num_gpus%* GPU on*}"
 if [ "${#num_gpus}" -gt "2" ]; then
 	num_gpus="${num_gpus%* GPUs on*}"
 fi
 num_gpus_loop="$((num_gpus-1))"
-prf "Number of GPUs detected: $num_gpus"
+prf "Number of GPUs detected:"$num_gpus
 
 if ! [ "$num_fans" -eq "$num_gpus" ]; then
 	prf "Submit an issue on my GitHub page... happy to fix this :D"
