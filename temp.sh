@@ -116,9 +116,9 @@ set_sleep() {
 }
 
 echo_info() {
-	prf "	temp=$current_t oldt=${old_t[$gpu]} td=$tdiff slp=$s gpu=$gpu
-	esp=${exp_sp[@]} espln=${#exp_sp[@]} ect=${exp_sp[$((current_t-min_t))]}
-	cd=$check_diff cd2=$check_diff2 mint=$min_t
+	prf "	t=$current_t oldt=${old_t[$gpu]} tdiff=$tdiff slp=$s gpu=$gpu
+	nspd?=${exp_sp[$((current_t-min_t))]} nspd=$new_spd cd=$check_diff
+	cd2=$check_diff2 mint=$min_t oldspd=${exp_sp[$((${old_t[$gpu]}-min_t))]}
 	"
 }
 
@@ -141,7 +141,7 @@ loop_cmds() {
 			else
 				new_spd="100"
 			fi
-			if [ "$new_spd" -ne "${exp_sp[${old_t[$gpu]}]}" ]; then
+			if [ "$new_spd" -ne "${exp_sp[$((${old_t[$gpu]}-min_t))]}" ]; then
 				set_speed "$new_spd"
 			fi
 			old_t["$gpu"]="$current_t"
@@ -205,6 +205,8 @@ for i in $(seq 0 "$((max_t-min_t))"); do
 		fi
 	done
 done
+
+prf "esp=${exp_sp[@]} espln=${#exp_sp[@]}"
 
 if [ "$num_gpus" -eq "1" ]; then
 	prf "Started process for 1 GPU and 1 Fan"
