@@ -62,3 +62,4 @@ There are unofficial AUR packages maintained by [@Scrumplex](https://github.com/
 - add nouveau support (once they fix Pascal)
 - add AMD support?
 - add support for GPU's that have more than one controllable fan (i.e. >1 fan controller)
+- make it completely POSIX compliant
