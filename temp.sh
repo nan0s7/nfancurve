@@ -6,7 +6,6 @@ s="0"; gpu="0"; max_t="0"; tdiff="0"; display=""; new_spd="0"; num_gpus="0"
 num_fans="0"; current_t="0"; check_diff=""; check_diff2=""; z=$0; fname=""
 fcurve_len="0"; num_gpus_loop="0"; declare -a old_t=(); declare -a exp_sp=()
 CDPATH=""; gpu_cmd="nvidia-settings"
-#gpu_cmd="/home/scott/Projects/nssim/nssim nvidia-settings"
 
 prf "
 ################################################################################
@@ -152,7 +151,7 @@ loop_cmds() {
 	fi
 
 	# Uncomment the following line if you want to log stuff
-	echo_info
+#	echo_info
 }
 
 check_already_running
