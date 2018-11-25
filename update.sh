@@ -2,7 +2,7 @@
 echo "~~ nan0s7's fan-speed curve script updater script ~~"
 
 prf() { printf %s\\n "$*" ; }
-declare -a config_changed=( 15 16 )
+declare -a config_changed=( 15 16 17 )
 
 finish() {
 	unset git_version
