@@ -186,7 +186,7 @@ if ! [ "$num_fans" -eq "$num_gpus" ]; then
 	get_query "fans"; get_query "gpus"; exit 1
 fi
 for i in $(seq 0 "$num_gpus_loop"); do
-	old_t["$num_gpus_loop"]="0"
+	old_t["$i"]="0"
 done
 
 for i in $(seq 0 "$((fcurve_len-1))"); do
@@ -219,7 +219,7 @@ else
 	while true; do
 		s="$long_s"
 		for i in $(seq 0 "$num_gpus_loop"); do
-			gpus="$i"
+			gpu="$i"
 			loop_cmds
 		done
 		sleep "$s"
