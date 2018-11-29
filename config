@@ -3,19 +3,19 @@
 #  first speed in fcurve is (default of 25%)
 min_t="25"
 
-# how long the script should wait until checking for a change in temps
-# the first value (default: 7) is for long idle periods
-# the second value (default: 5) is if the script detects a change in temps
+# How long the script should wait until checking for a change in temps
+# The first value (default: 7) is for long idle periods
+# The second value (default: 5) is if the script detects a change in temps
 #  but isn't great enough to alter the fan speed
 long_s="7"
 short_s="5"
 
-# by default it's set up so that when the temp is less than or equal to 30
-#  degrees, the fan speed will be set to 20%. next, if the temp is between 31
-#  and 40, the fan speed should be set to 35%, etc.
-# the last temperature value will be the maximum temperature before 100% fan
+# By default it's set up so that when the temp is less than or equal to 35
+#  degrees, the fan speed will be set to 25%. Next, if the temp is between 36
+#  and 45, the fan speed should be set to 40%, etc.
+# The last temperature value will be the maximum temperature before 100% fan
 #  speed will be set
-# you can make the array as big or as small as you require, as long as they
+# You can make the array as big or as small as you require, as long as they
 #  both end up being the same size
-declare -a fcurve=( "25" "40" "55" "70" "85" )
-declare -a tcurve=( "35" "45" "55" "65" "75" )
+declare -a fcurve=( "25" "40" "55" "70" "85" ) # fan speeds
+declare -a tcurve=( "35" "45" "55" "65" "75" ) # temperatures
