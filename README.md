@@ -54,6 +54,7 @@ There are unofficial AUR packages maintained by [@Scrumplex](https://github.com/
 - [@Scrumplex](https://github.com/Scrumplex), for adding check to avoid errors when config is missing, and maintaining the AUR package
 - [@stefmitropoulos](https://github.com/stefmitropoulos), for greatly improving the way config files are loaded
 - [@mklement0](https://stackoverflow.com/users/45375/mklement0), (stackoverflow) for a [POSIX implimentation](https://stackoverflow.com/questions/29832037/how-to-get-script-directory-in-posix-sh) of resolving file symlinks
+- [@xberg](https://github.com/xberg), for finding and fixing a bug with the multi-GPU side of the script
 
 ## TODO
 - ~~make sure that "CoolBits" is enabled~~ - _not really the scope of this script_
