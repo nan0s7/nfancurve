@@ -19,3 +19,8 @@ short_s="5"
 #  both end up being the same size
 declare -a fcurve=( "25" "40" "55" "70" "85" ) # fan speeds
 declare -a tcurve=( "35" "45" "55" "65" "75" ) # temperatures
+
+# These two arrays are for GPU's that have a secondary fan that you may wish
+#  to control seperately, especially if it is water-cooled.
+declare -a fcurve2=( "15" "30" "45" "60" "75" )
+declare -a tcurve2=( "35" "45" "55" "65" "75" )
