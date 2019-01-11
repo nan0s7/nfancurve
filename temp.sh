@@ -115,7 +115,7 @@ get_absolute_tdiff() {
 	fi
 }
 get_absolute_tdiff2() {
-	tmp="${old_t2[$gpu]}"
+	tmp="${old_t2[$selected_fan]}"
 	if [ "$current_t" -le "$tmp" ]; then
 		tdiff="$((tmp-current_t))"
 	else
@@ -178,7 +178,7 @@ loop_cmds() {
 loop_cmds2() {
 	get_temp
 
-	if [ "$current_t" -ne "${old_t2[$gpu]}" ]; then
+	if [ "$current_t" -ne "${old_t2[$selected_fan]}" ]; then
 		# Calculate difference and make sure it's positive
 		get_absolute_tdiff2
 
@@ -195,7 +195,8 @@ loop_cmds2() {
 				new_spd="100"
 			fi
 			if [ "$new_spd" -ne "${exp_sp2[$((${old_t2[$gpu]}-min_t2))]}" ]; then
-				set_speed "$new_spd"
+				$gpu_cmd -a [fan:"$selected_fan"]/GPUTargetFanSpeed="$new_spd" $display
+#				set_speed "$new_spd"
 			fi
 			old_t2["$gpu"]="$current_t"
 			set_sleep "$long_s"
@@ -297,11 +298,14 @@ elif [ "$num_fans" -eq "4" ]; then
 	prf "Started beta process for 4-fans and 2-gpus"
 	while true; do
 		s="$long_s"
-		for i in $(seq 0 "$num_gpus_loop"); do
-			gpu="$i"
-			loop_cmds
-			loop_cmds2
-		done
+		gpu="0"
+		loop_cmds
+		gpu="1"
+		loop_cmds
+		selected_fan="2"
+		loop_cmds2
+		selected_fan="3"
+		loop_cmds2
 		sleep "$s"
 	done
 else
