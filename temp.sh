@@ -7,6 +7,13 @@ num_fans="0"; current_t="0"; check_diff=""; check_diff2=""; z=$0; fname=""
 fcurve_len="0"; num_gpus_loop="0"; declare -a old_t=(); declare -a exp_sp=()
 CDPATH=""; gpu_cmd="nvidia-settings"
 
+declare -a old_t2=()
+fcurve_len2="0"
+declare -a exp_sp2=()
+max_t2="0"
+check_diff12=""
+check_diff22=""
+
 prf "
 ################################################################################
 #          nan0s7's script for automatically managing GPU fan speed            #
@@ -107,6 +114,14 @@ get_absolute_tdiff() {
 		tdiff="$((current_t-tmp))"
 	fi
 }
+get_absolute_tdiff2() {
+	tmp="${old_t2[$gpu]}"
+	if [ "$current_t" -le "$tmp" ]; then
+		tdiff="$((tmp-current_t))"
+	else
+		tdiff="$((current_t-tmp))"
+	fi
+}
 
 set_sleep() {
 	if [ "$1" -lt "$s" ]; then
@@ -118,6 +133,12 @@ echo_info() {
 	prf "	t=$current_t oldt=${old_t[$gpu]} tdiff=$tdiff slp=$s gpu=$gpu
 	nspd?=${exp_sp[$((current_t-min_t))]} nspd=$new_spd cd=$check_diff
 	cd2=$check_diff2 mint=$min_t oldspd=${exp_sp[$((${old_t[$gpu]}-min_t))]}
+	"
+}
+echo_info2() {
+	prf "	t=$current_t oldt2=${old_t2[$gpu]} tdiff=$tdiff slp=$s gpu=$gpu
+	nspd?=${exp_sp2[$((current_t-min_t2))]} nspd=$new_spd cd=$check_diff12
+	cd2=$check_diff22 mint2=$min_t2 oldspd=${exp_sp2[$((${old_t2[$gpu]}-min_t2))]}
 	"
 }
 
@@ -151,7 +172,38 @@ loop_cmds() {
 	fi
 
 	# Uncomment the following line if you want to log stuff
-#	echo_info
+	echo_info
+}
+
+loop_cmds2() {
+	get_temp
+
+	if [ "$current_t" -ne "${old_t2[$gpu]}" ]; then
+		# Calculate difference and make sure it's positive
+		get_absolute_tdiff2
+
+		if [ "$tdiff" -le "$check_diff22" ]; then
+			set_sleep "$long_s"
+		elif [ "$tdiff" -lt "$check_diff12" ]; then
+			set_sleep "$short_s"
+		else
+			if [ "$current_t" -lt "$min_t2" ]; then
+				new_spd="0"
+			elif [ "$current_t" -lt "$max_t2" ]; then
+				new_spd="${exp_sp2[$((current_t-min_t2))]}"
+			else
+				new_spd="100"
+			fi
+			if [ "$new_spd" -ne "${exp_sp2[$((${old_t2[$gpu]}-min_t2))]}" ]; then
+				set_speed "$new_spd"
+			fi
+			old_t2["$gpu"]="$current_t"
+			set_sleep "$long_s"
+		fi
+	else
+		set_sleep "$long_s"
+	fi
+	echo_info2
 }
 
 check_already_running
@@ -163,10 +215,16 @@ fi
 if ! [ "${#fcurve[@]}" -eq "${#tcurve[@]}" ]; then
 	prf "Your two fan curves don't match up!"; exit 1
 fi
+if ! [ "${#fcurve2[@]}" -eq "${#tcurve2[@]}" ]; then
+	prf "Your two fan curves don't match up!"; exit 1
+fi
 
 source "$conf_file"; prf "Configuration file: $conf_file"
 max_t="${tcurve[-1]}"
+max_t2="${tcurve2[-1]}"
+
 fcurve_len="$((${#fcurve[@]}-1))"
+fcurve_len2="$((${#fcurve2[@]}-1))"
 
 num_fans=$(get_query "fans"); num_fans="${num_fans%* Fan on*}"
 if [ "${#num_fans}" -gt "2" ]; then
@@ -181,19 +239,31 @@ fi
 num_gpus_loop="$((num_gpus-1))"
 prf "Number of GPUs detected:"$num_gpus
 
-if ! [ "$num_fans" -eq "$num_gpus" ]; then
-	prf "Submit an issue on my GitHub page... happy to fix this :D"
-	get_query "fans"; get_query "gpus"; exit 1
-fi
+#if ! [ "$num_fans" -eq "$num_gpus" ]; then
+#	if [ "$num_fans" -eq "$(( num_gpus * 2 ))" ]; then
+#		prf "This is a beta feature, please be patient"
+#	else
+#		prf "Submit an issue on my GitHub page... happy to fix this :D"
+#		get_query "fans"; get_query "gpus"; exit 1
+#	fi
+#fi
 for i in $(seq 0 "$num_gpus_loop"); do
 	old_t["$i"]="0"
+	old_t2["$i"]="0"
 done
 
 for i in $(seq 0 "$((fcurve_len-1))"); do
 	check_diff="$((check_diff+tcurve[$((i+1))]-tcurve[$i]))"
 done
+for i in $(seq 0 "$((fcurve_len2-1))"); do
+	check_diff12="$((check_diff12+tcurve2[$((i+1))]-tcurve2[$i]))"
+done
 check_diff="$((check_diff/fcurve_len))"; prf "tdiff average: $check_diff"
 check_diff2="$((check_diff-long_s+short_s-1))"
+
+check_diff12="$((check_diff12/fcurve_len2))"; prf "tdiff average: $check_diff12"
+check_diff22="$((check_diff12-long_s+short_s-1))"
+
 set_fan_control "$num_gpus_loop" "1"
 
 # Expand speed curve into an arr that reduces comp. time (hopefully)
@@ -204,14 +274,34 @@ for i in $(seq 0 "$((max_t-min_t))"); do
 		fi
 	done
 done
+for i in $(seq 0 "$((max_t2-min_t2))"); do
+	for j in $(seq 0 "$fcurve_len2"); do
+		if [ "$i" -le "$((tcurve2[$j]-min_t2))" ]; then
+			exp_sp2["$i"]="${fcurve2[$j]}"; break
+		fi
+	done
+done
 
 prf "esp=${exp_sp[@]} espln=${#exp_sp[@]}"
+prf "esp2=${exp_sp2[@]} espln2=${#exp_sp2[@]}"
+
 
 if [ "$num_gpus" -eq "1" ]; then
 	prf "Started process for 1 GPU and 1 Fan"
 	while true; do
 		s="$long_s"
 		loop_cmds
+		sleep "$s"
+	done
+elif [ "$num_fans" -eq "4" ]; then
+	prf "Started beta process for 4-fans and 2-gpus"
+	while true; do
+		s="$long_s"
+		for i in $(seq 0 "$num_gpus_loop"); do
+			gpu="$i"
+			loop_cmds
+			loop_cmds2
+		done
 		sleep "$s"
 	done
 else
