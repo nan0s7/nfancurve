@@ -7,11 +7,13 @@ num_fans="0"; current_t="0"; check_diff=""; check_diff2=""; z=$0; fname=""
 fcurve_len="0"; num_gpus_loop="0"; declare -a old_t=(); declare -a exp_sp=()
 CDPATH=""; gpu_cmd="nvidia-settings"
 
+mt=0
 ot=0
 declare -a es=()
 declare -a old_t2=()
 fcurve_len2="0"
 declare -a exp_sp2=()
+min_t2="$min_t"
 max_t2="0"
 check_diff12=""
 check_diff22=""
@@ -109,21 +111,20 @@ set_speed() {
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 get_absolute_tdiff() {
-	tmp="${old_t[$gpu]}"
-	if [ "$current_t" -le "$tmp" ]; then
-		tdiff="$((tmp-current_t))"
+	if [ "$current_t" -le "$ot" ]; then
+		tdiff="$((ot-current_t))"
 	else
-		tdiff="$((current_t-tmp))"
+		tdiff="$((current_t-ot))"
 	fi
 }
-get_absolute_tdiff2() {
-	tmp="${old_t2[$selected_fan]}"
-	if [ "$current_t" -le "$tmp" ]; then
-		tdiff="$((tmp-current_t))"
-	else
-		tdiff="$((current_t-tmp))"
-	fi
-}
+#get_absolute_tdiff2() {
+#	tmp="${old_t2[$selected_fan]}"
+#	if [ "$current_t" -le "$tmp" ]; then
+#		tdiff="$((tmp-current_t))"
+#	else
+#		tdiff="$((current_t-tmp))"
+#	fi
+#}
 
 set_sleep() {
 	if [ "$1" -lt "$s" ]; then
@@ -146,19 +147,19 @@ loop_cmds() {
 		# Calculate difference and make sure it's positive
 		get_absolute_tdiff
 
-		if [ "$tdiff" -le "$check_diff2" ]; then
+		if [ "$tdiff" -le "$chd1" ]; then
 			set_sleep "$long_s"
-		elif [ "$tdiff" -lt "$check_diff" ]; then
+		elif [ "$tdiff" -lt "$chd2" ]; then
 			set_sleep "$short_s"
 		else
-			if [ "$current_t" -lt "$min_t" ]; then
+			if [ "$current_t" -lt "$mt" ]; then
 				new_spd="0"
 			elif [ "$current_t" -lt "$max_t" ]; then
-				new_spd="${es[$((current_t-min_t))]}"
+				new_spd="${es[$((current_t-mt))]}"
 			else
 				new_spd="100"
 			fi
-			if [ "$new_spd" -ne "${es[$((ot-min_t))]}" ]; then
+			if [ "$new_spd" -ne "${es[$((ot-mt))]}" ]; then
 				set_speed "$new_spd"
 			fi
 			old_t["$gpu"]="$current_t"
@@ -270,12 +271,18 @@ if [ "$num_gpus" -eq "1" ]; then
 			es["$i"]="$element"
 			i=$((i+1))
 		done
+		chd1="$check_diff"
+		chd2="$check_diff2"
+		mt="$min_t"
 	else
 		i=0
 		for element in ${exp_sp2[@]}; do
 			es["$i"]="$element"
 			i=$((i+1))
 		done
+		chd1="$check_diff12"
+		chd2="$check_diff22"
+		mt="$min_t2"
 	fi
 	prf "$es"
 	prf "${es[@]}"
@@ -298,12 +305,18 @@ else
 					es["$i"]="$element"
 					i=$((i+1))
 				done
+				chd1="$check_diff"
+				chd2="$check_diff2"
+				mt="$min_t"
 			else
 				i=0
 				for element in ${exp_sp2[@]}; do
 					es["$i"]="$element"
 					i=$((i+1))
 				done
+				chd1="$check_diff12"
+				chd2="$check_diff22"
+				mt="$min_t2"
 			fi
 			ot="${old_t[$gpu]}"
 			loop_cmds
