@@ -7,13 +7,12 @@ num_fans="0"; current_t="0"; check_diff=""; check_diff2=""; z=$0; fname=""
 fcurve_len="0"; num_gpus_loop="0"; declare -a old_t=(); declare -a exp_sp=()
 CDPATH=""; gpu_cmd="nvidia-settings"
 
-mt=0
+mnt=0
 ot=0
 declare -a es=()
-declare -a old_t2=()
 fcurve_len2="0"
 declare -a exp_sp2=()
-min_t2="$min_t"
+#min_t2="$min_t"
 max_t2="0"
 check_diff12=""
 check_diff22=""
@@ -117,14 +116,6 @@ get_absolute_tdiff() {
 		tdiff="$((current_t-ot))"
 	fi
 }
-#get_absolute_tdiff2() {
-#	tmp="${old_t2[$selected_fan]}"
-#	if [ "$current_t" -le "$tmp" ]; then
-#		tdiff="$((tmp-current_t))"
-#	else
-#		tdiff="$((current_t-tmp))"
-#	fi
-#}
 
 set_sleep() {
 	if [ "$1" -lt "$s" ]; then
@@ -152,14 +143,14 @@ loop_cmds() {
 		elif [ "$tdiff" -lt "$chd2" ]; then
 			set_sleep "$short_s"
 		else
-			if [ "$current_t" -lt "$mt" ]; then
+			if [ "$current_t" -lt "$mnt" ]; then
 				new_spd="0"
-			elif [ "$current_t" -lt "$max_t" ]; then
-				new_spd="${es[$((current_t-mt))]}"
+			elif [ "$current_t" -lt "$mxt" ]; then
+				new_spd="${es[$((current_t-mnt))]}"
 			else
 				new_spd="100"
 			fi
-			if [ "$new_spd" -ne "${es[$((ot-mt))]}" ]; then
+			if [ "$new_spd" -ne "${es[$((ot-mnt))]}" ]; then
 				set_speed "$new_spd"
 			fi
 			old_t["$gpu"]="$current_t"
@@ -173,15 +164,13 @@ loop_cmds() {
 	echo_info
 }
 
-#				new_spd="${exp_sp[$((current_t-min_t))]}"
-#			if [ "$new_spd" -ne "${exp_sp[$((${old_t[$fan]}-min_t))]}" ]; then
-
 check_already_running
 check_driver
 
 if ! [ -f "$conf_file" ]; then
 	prf "Config file not found." >&2; exit 1
 fi
+
 if ! [ "${#fcurve[@]}" -eq "${#tcurve[@]}" ]; then
 	prf "Your two fan curves don't match up!"; exit 1
 fi
@@ -220,7 +209,6 @@ prf "Number of GPUs detected:"$num_gpus
 #fi
 for i in $(seq 0 "$num_gpus_loop"); do
 	old_t["$i"]="0"
-	old_t2["$i"]="0"
 done
 
 for i in $(seq 0 "$((fcurve_len-1))"); do
@@ -256,9 +244,6 @@ done
 prf "esp=${exp_sp[@]} espln=${#exp_sp[@]}"
 prf "esp2=${exp_sp2[@]} espln2=${#exp_sp2[@]}"
 
-# do check for non-even number of fans and quit
-#	if [ "$num_fans" -eq "$((2*num_gpus))" ]; then
-
 if [ "$num_gpus" -eq "1" ]; then
 	prf "Started process for 1 GPU and 1 Fan"
 	fan="$default_fan"
@@ -273,7 +258,8 @@ if [ "$num_gpus" -eq "1" ]; then
 		done
 		chd1="$check_diff"
 		chd2="$check_diff2"
-		mt="$min_t"
+		mnt="$min_t"
+		mxt="$max_t"
 	else
 		i=0
 		for element in ${exp_sp2[@]}; do
@@ -282,7 +268,8 @@ if [ "$num_gpus" -eq "1" ]; then
 		done
 		chd1="$check_diff12"
 		chd2="$check_diff22"
-		mt="$min_t2"
+		mnt="$min_t2"
+		mxt="$max_t2"
 	fi
 	prf "$es"
 	prf "${es[@]}"
@@ -307,7 +294,8 @@ else
 				done
 				chd1="$check_diff"
 				chd2="$check_diff2"
-				mt="$min_t"
+				mnt="$min_t"
+				mxt="$max_t"
 			else
 				i=0
 				for element in ${exp_sp2[@]}; do
@@ -316,7 +304,8 @@ else
 				done
 				chd1="$check_diff12"
 				chd2="$check_diff22"
-				mt="$min_t2"
+				mnt="$min_t2"
+				mxt="$max_t2"
 			fi
 			ot="${old_t[$gpu]}"
 			loop_cmds
