@@ -8,6 +8,7 @@ fcurve_len="0"; num_gpus_loop="0"; declare -a old_t=(); declare -a exp_sp=()
 CDPATH=""; gpu_cmd="nvidia-settings"
 
 mnt=0
+mxt=0
 ot=0
 declare -a es=()
 fcurve_len2="0"
@@ -172,10 +173,10 @@ if ! [ -f "$conf_file" ]; then
 fi
 
 if ! [ "${#fcurve[@]}" -eq "${#tcurve[@]}" ]; then
-	prf "Your two fan curves don't match up!"; exit 1
+	prf "fcurve and tcurve don't match up!"; exit 1
 fi
 if ! [ "${#fcurve2[@]}" -eq "${#tcurve2[@]}" ]; then
-	prf "Your two fan curves don't match up!"; exit 1
+	prf "fcurve2 and tcurve2 don't match up!"; exit 1
 fi
 
 source "$conf_file"; prf "Configuration file: $conf_file"
