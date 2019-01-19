@@ -1,7 +1,10 @@
 # min_t is the temperature at which every temperature below it will cause
 #  the fan speed to be set to 0%, and everything above will be whatever the
 #  first speed in fcurve is (default of 25%)
+# min_t2 is only used with the second fan speed and temperature arrays, so
+#  there is no need to change it unless you're using the second curve
 min_t="25"
+min_t2="25"
 
 # How long the script should wait until checking for a change in temps
 # The first value (default: 7) is for long idle periods
@@ -29,6 +32,11 @@ declare -a tcurve2=( "35" "45" "55" "65" "75" )
 #  is 1, that indicates that the script should use the first curve for that
 #  fan. The same goes for the number 2.
 declare -a which_curve=( "1" "1" "2" "2" )
+
+# 
 default_fan="0"
+
+# Similar to which_curve, but instead lets the script know which of the GPU's
+#  has which fan. i.e. element 0 in the array being set to 0 means that fan 0
+#  is assigned to GPU 0, element 1 is 0 too, meaning fan 1 is on GPU 0 as well
 declare -a fan2gpu=( "0" "0" "1" "1" )
-even_number_of_fans="0" # 0=yes, 1=no
