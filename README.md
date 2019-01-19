@@ -8,6 +8,8 @@ This script is currently set up for Celsius. However, it can easily be modified 
 
 If you need any help configuring my script or don't know how to make it start automatically check the [USAGE.md](USAGE.md) file.
 
+![fancurve image](https://github.com/wonderingabout/nfancurve/blob/patch-2/fancurve.png?raw=true)
+
 ## Features
 - by default it has a slightly aggressive fan curve profile (lower temps, louder noise)
 - uses `nvidia-settings` commands
