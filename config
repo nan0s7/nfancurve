@@ -3,8 +3,8 @@
 #  first speed in fcurve is (default of 25%)
 # min_t2 is only used with the second fan speed and temperature arrays, so
 #  there is no need to change it unless you're using the second curve
-min_t="25"
-min_t2="25"
+min_t="0"
+min_t2="0"
 
 # How long the script should wait until checking for a change in temps
 # The first value (default: 7) is for long idle periods
@@ -20,23 +20,33 @@ short_s="5"
 #  speed will be set
 # You can make the array as big or as small as you require, as long as they
 #  both end up being the same size
-declare -a fcurve=( "25" "40" "55" "70" "85" ) # fan speeds
-declare -a tcurve=( "35" "45" "55" "65" "75" ) # temperatures
+declare -a fcurve=( "20" "30" "45" "50" "55" ) # fan speeds
+declare -a tcurve=( "35" "40" "45" "50" "55" ) # temperatures
 
 # These two arrays are for GPU's that have a secondary fan that you may wish
 #  to control seperately, especially if it is water-cooled.
-declare -a fcurve2=( "15" "30" "45" "60" "75" )
-declare -a tcurve2=( "35" "45" "55" "65" "75" )
+# declare -a fcurve2=( "15" "30" "45" "60" "75" )
+# declare -a tcurve2=( "35" "45" "55" "65" "75" )
+# commented out since my GPU fans are detected as only one (open case to make sure both fans spin
 
-# First number in array is fan 0, second number is fan 1, etc. If the number
-#  is 1, that indicates that the script should use the first curve for that
-#  fan. The same goes for the number 2.
-declare -a which_curve=( "1" "1" "2" "2" )
+# First number in array is fan 0, second number is fan 1, third number is fan 3, etc.
+# If the number is 1, that indicates that the script should use the first curve for that
+#  fan. The same goes for if the number is 2.
+declare -a which_curve=( "1" )
 
 # 
 default_fan="0"
+# to know fan settings, run the command below
+# nvidia-settings -q all
+# or
+# nvidia-settings -q 
+# or simply
+# nvidia-smi
+# shows only one fan (fan:0) with its fanspeed
 
 # Similar to which_curve, but instead lets the script know which of the GPU's
 #  has which fan. i.e. element 0 in the array being set to 0 means that fan 0
 #  is assigned to GPU 0, element 1 is 0 too, meaning fan 1 is on GPU 0 as well
-declare -a fan2gpu=( "0" "0" "1" "1" )
+# declare -a fan2gpu=( "0" "0" "1" "1" )
+# commented out since i have only one gpu fan function (my gpu is dual fan though)
+# so let's go for the simple curve
