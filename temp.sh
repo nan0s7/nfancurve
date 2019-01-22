@@ -113,9 +113,10 @@ set_sleep() {
 }
 
 echo_info() {
+	if [ "$new_spd" -ne "${es[$((ot-mnt))]}" ]; then z="yes"; else z="no"; fi
 	prf "	t=$current_t oldt=$ot tdiff=$tdiff slp=$s gpu=$gpu
-	nspd?=${es[$((current_t-mnt))]} nspd=$new_spd cd=$chd
-	cd2=$chd2 mint=$mnt oldspd=${es[$((ot-mnt))]} fan=$fan
+	nspd?=${es[$((current_t-mnt))]} nspd=$new_spd cd=$chd1 maxt=$mxt
+	cd2=$chd2 mint=$mnt oldspd=${es[$((ot-mnt))]} fan=$fan z=$z
 	"
 }
 
@@ -138,9 +139,9 @@ loop_cmds() {
 			else
 				new_spd="100"
 			fi
-			if [ "$new_spd" -ne "${es[$((ot-mnt))]}" ]; then
-				set_speed "$new_spd"
-			fi
+#			if [ "$new_spd" -ne "${es[$((ot-mnt))]}" ]; then
+			set_speed "$new_spd"
+#			fi
 			old_t["$gpu"]="$current_t"
 			set_sleep "$long_s"
 		fi
