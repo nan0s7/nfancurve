@@ -31,7 +31,7 @@ declare -a tcurve2=( "35" "45" "55" "65" "75" )
 # First number in array is fan 0, second number is fan 1, etc. If the number
 #  is 1, that indicates that the script should use the first curve for that
 #  fan. The same goes for the number 2.
-declare -a which_curve=( "1" "1" "2" "2" )
+declare -a which_curve=( "1" "2" "1" "2" )
 
 # 
 default_fan="0"
