@@ -166,11 +166,11 @@ fi
 if ! [ "${#fcurve2[@]}" -eq "${#tcurve2[@]}" ]; then
 	prf "fcurve2 and tcurve2 don't match up!"; exit 1
 fi
-if [ "$min_t" -eq "${tcurve[1]}" ]; then
-	prf "min_t is equal to the first value in the tcurve!"; exit 1
+if [ "$min_t" -le "${tcurve[1]}" ]; then
+	prf "min_t is less than the first value in the tcurve!"; exit 1
 fi
-if [ "$min_t2" -eq "${tcurve2[1]}" ]; then
-	prf "min_t2 is equal to the first value in the tcurve2!"; exit 1
+if [ "$min_t2" -le "${tcurve2[1]}" ]; then
+	prf "min_t2 is less than the first value in the tcurve2!"; exit 1
 fi
 
 source "$conf_file"; prf "Configuration file: $conf_file"
