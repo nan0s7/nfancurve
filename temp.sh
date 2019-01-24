@@ -139,10 +139,10 @@ loop_cmds() {
 			else
 				new_spd="100"
 			fi
-#			if [ "$new_spd" -ne "${es[$((ot-mnt))]}" ]; then
-			set_speed "$new_spd"
-#			fi
-			old_t["$gpu"]="$current_t"
+			if [ "$new_spd" -ne "${es[$((ot-mnt))]}" ]; then
+				set_speed "$new_spd"
+			fi
+			old_t["$fan"]="$current_t"
 			set_sleep "$long_s"
 		fi
 	else
@@ -166,6 +166,12 @@ fi
 if ! [ "${#fcurve2[@]}" -eq "${#tcurve2[@]}" ]; then
 	prf "fcurve2 and tcurve2 don't match up!"; exit 1
 fi
+if [ "$min_t" -eq "${tcurve[1]}" ]; then
+	prf "min_t is equal to the first value in the tcurve!"; exit 1
+fi
+if [ "$min_t2" -eq "${tcurve2[1]}" ]; then
+	prf "min_t2 is equal to the first value in the tcurve2!"; exit 1
+fi
 
 source "$conf_file"; prf "Configuration file: $conf_file"
 max_t="${tcurve[-1]}"; max_t2="${tcurve2[-1]}"
@@ -184,7 +190,7 @@ fi
 num_gpus_loop="$((num_gpus-1))"; num_fans_loop="$((num_fans-1))"
 prf "Number of GPUs detected:"$num_gpus
 
-for i in $(seq 0 "$num_gpus_loop"); do
+for i in $(seq 0 "$num_fans_loop"); do
 	old_t["$i"]="0"
 done
 
@@ -196,7 +202,7 @@ for i in $(seq 0 "$((fcurve_len2-1))"); do
 done
 check_diff11="$((check_diff11/fcurve_len))"; prf "tdiff average: $check_diff11"
 check_diff12="$((check_diff11-long_s+short_s-1))"
-check_diff21="$((check_diff21/fcurve_len2))"; prf "tdiff average: $check_diff21"
+check_diff21="$((check_diff21/fcurve_len2))"; prf "tdiff2 average: $check_diff21"
 check_diff22="$((check_diff21-long_s+short_s-1))"
 
 set_fan_control "$num_gpus_loop" "1"
@@ -248,7 +254,7 @@ if [ "$num_gpus" -eq "1" ]; then
 	fi
 	while true; do
 		s="$long_s"
-		ot="${old_t[$gpu]}"
+		ot="${old_t[$fan]}"
 		loop_cmds
 		sleep "$s"
 	done
@@ -280,7 +286,7 @@ else
 				mnt="$min_t2"
 				mxt="$max_t2"
 			fi
-			ot="${old_t[$gpu]}"
+			ot="${old_t[$fan]}"
 			loop_cmds
 		done 
 		sleep "$s"
