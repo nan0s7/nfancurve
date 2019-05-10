@@ -32,7 +32,8 @@ If you need any help configuring my script or don't know how to make it start au
 - Download the .zip file straight from the GitHubs
 - Extract it somewhere, and open a terminal to that directory
 - Make sure `CoolBits` is enabled (see [USAGE.md](USAGE.md))
-- Run `./temp.sh` for a foreground process, or `./update.sh` for a background* one
+- ~~Run `./temp.sh` for a foreground process, or `./update.sh` for a background* one~~
+- Run `bash temp.sh` (or any compatable shell) or `./temp.sh` for a foreground process*
 
 ### git
 - Choose a folder you want to download/install the script in
@@ -44,7 +45,7 @@ There are unofficial AUR packages maintained by [@Scrumplex](https://github.com/
 - Stable: [nfancurve](https://aur.archlinux.org/packages/nfancurve/)<sup>AUR</sup>
 - Git Master: [nfancurve-git](https://aur.archlinux.org/packages/nfancurve-git/)<sup>AUR</sup>
 
-*or just execute this command: `nohup ./temp.sh >/dev/null 2>&1 &`
+*or just execute this command for a background process: `nohup ./temp.sh >/dev/null 2>&1 &`, or `nohup bash temp.sh >/dev/null 2>&1 &`
 
 ## Honourable mentions
 - [@aryonoco](https://github.com/aryonoco), for being my multi-GPU guinea pig
