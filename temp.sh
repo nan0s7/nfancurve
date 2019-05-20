@@ -160,6 +160,8 @@ if ! [ -f "$conf_file" ]; then
 	prf "Config file not found." >&2; exit 1
 fi
 
+source "$conf_file"; prf "Configuration file: $conf_file"
+
 if ! [ "${#fcurve[@]}" -eq "${#tcurve[@]}" ]; then
 	prf "fcurve and tcurve don't match up!"; exit 1
 fi
@@ -173,7 +175,6 @@ if [ "$min_t2" -le "${tcurve2[1]}" ]; then
 	prf "min_t2 is less than the first value in the tcurve2!"; exit 1
 fi
 
-source "$conf_file"; prf "Configuration file: $conf_file"
 max_t="${tcurve[-1]}"; max_t2="${tcurve2[-1]}"
 fcurve_len="$((${#fcurve[@]}-1))"; fcurve_len2="$((${#fcurve2[@]}-1))"
 
