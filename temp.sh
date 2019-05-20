@@ -233,32 +233,29 @@ done
 prf "esp=${exp_sp[@]} espln=${#exp_sp[@]}"
 prf "esp2=${exp_sp2[@]} espln2=${#exp_sp2[@]}"
 
+set_stuff() {
+	gpu="${fan2gpu[$1]}"
+	tmp="${which_curve[$1]}"
+
+	if [ "$tmp" -eq "1" ]; then
+		chd1="$check_diff11"; chd2="$check_diff12"
+		mnt="$min_t"; mxt="$max_t"
+	else
+		chd1="$check_diff21"; chd2="$check_diff22"
+		mnt="$min_t2"; mxt="$max_t2"
+	fi
+
+	i=0
+	for element in ${exp_sp[@]}; do
+		es["$i"]="$element"
+		i=$((i+1))
+	done
+}
+
 if [ "$num_gpus" -eq "1" ]; then
 	prf "Started process for 1 GPU and 1 Fan"
 	fan="$default_fan"
-	gpu="${fan2gpu[$fan]}"
-	tmp="${which_curve[$fan]}"
-	if [ "$tmp" -eq "1" ]; then
-		i=0
-		for element in ${exp_sp[@]}; do
-			es["$i"]="$element"
-			i=$((i+1))
-		done
-		chd1="$check_diff11"
-		chd2="$check_diff12"
-		mnt="$min_t"
-		mxt="$max_t"
-	else
-		i=0
-		for element in ${exp_sp2[@]}; do
-			es["$i"]="$element"
-			i=$((i+1))
-		done
-		chd1="$check_diff21"
-		chd2="$check_diff22"
-		mnt="$min_t2"
-		mxt="$max_t2"
-	fi
+	set_stuff "$fan"
 	while true; do
 		s="$long_s"
 		ot="${old_t[$fan]}"
@@ -270,29 +267,7 @@ else
 	while true; do
 		s="$long_s"
 		for fan in $(seq 0 "$num_fans_loop"); do
-			gpu="${fan2gpu[$fan]}"
-			tmp="${which_curve[$fan]}"
-			if [ "$tmp" -eq "1" ]; then
-				i=0
-				for element in ${exp_sp[@]}; do
-					es["$i"]="$element"
-					i=$((i+1))
-				done
-				chd1="$check_diff11"
-				chd2="$check_diff12"
-				mnt="$min_t"
-				mxt="$max_t"
-			else
-				i=0
-				for element in ${exp_sp2[@]}; do
-					es["$i"]="$element"
-					i=$((i+1))
-				done
-				chd1="$check_diff21"
-				chd2="$check_diff22"
-				mnt="$min_t2"
-				mxt="$max_t2"
-			fi
+			set_stuff "$fan"
 			ot="${old_t[$fan]}"
 			loop_cmds
 		done 
