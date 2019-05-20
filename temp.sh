@@ -168,28 +168,34 @@ fi
 if ! [ "${#fcurve2[@]}" -eq "${#tcurve2[@]}" ]; then
 	prf "fcurve2 and tcurve2 don't match up!"; exit 1
 fi
-if [ "$min_t" -le "${tcurve[1]}" ]; then
-	prf "min_t is less than the first value in the tcurve!"; exit 1
+if [ "$min_t" -ge "${tcurve[1]}" ]; then
+	prf "min_t is greater than the first value in the tcurve!"; exit 1
 fi
-if [ "$min_t2" -le "${tcurve2[1]}" ]; then
-	prf "min_t2 is less than the first value in the tcurve2!"; exit 1
+if [ "$min_t2" -ge "${tcurve2[1]}" ]; then
+	prf "min_t2 is greater than the first value in the tcurve2!"; exit 1
 fi
 
 max_t="${tcurve[-1]}"; max_t2="${tcurve2[-1]}"
 fcurve_len="$((${#fcurve[@]}-1))"; fcurve_len2="$((${#fcurve2[@]}-1))"
 
 num_fans=$(get_query "fans"); num_fans="${num_fans%* Fan on*}"
-if [ "${#num_fans}" -gt "2" ]; then
+if [ -z "$num_fans" ]; then
+	prf "No Fans detected"; exit 1
+elif [ "${#num_fans}" -gt "2" ]; then
 	num_fans="${num_fans%* Fans on*}"
+else
+	prf "Number of Fans detected:"$num_fans
 fi
-prf "Number of Fans detected:"$num_fans
 
 num_gpus=$(get_query "gpus"); num_gpus="${num_gpus%* GPU on*}"
-if [ "${#num_gpus}" -gt "2" ]; then
+if [ -z "$num_gpus" ]; then
+	prf "No GPUs detected"; exit 1
+elif [ "${#num_gpus}" -gt "2" ]; then
 	num_gpus="${num_gpus%* GPUs on*}"
+else
+	num_gpus_loop="$((num_gpus-1))"; num_fans_loop="$((num_fans-1))"
+	prf "Number of GPUs detected:"$num_gpus
 fi
-num_gpus_loop="$((num_gpus-1))"; num_fans_loop="$((num_fans-1))"
-prf "Number of GPUs detected:"$num_gpus
 
 for i in $(seq 0 "$num_fans_loop"); do
 	old_t["$i"]="0"
