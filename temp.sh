@@ -6,7 +6,7 @@ s="0"; max_t="0"; tdiff="0"; display=""; new_spd="0"; num_gpus="0"; CDPATH=""
 num_fans="0"; current_t="0"; check_diff11=""; check_diff12=""; z=$0; fname=""
 fcurve_len="0"; num_gpus_loop="0"; declare -a old_t=(); declare -a exp_sp=()
 mnt=0; mxt=0; ot=0; declare -a es=(); fcurve_len2="0"; declare -a exp_sp2=()
-max_t2="0"; check_diff21=""; check_diff22=""; num_fans_loop="0"
+max_t2="0"; check_diff21=""; check_diff22=""; num_fans_loop="0"; tmp_s="0"
 gpu_cmd="nvidia-settings"
 
 usage="Usage: $(basename "$0") [OPTION]...
@@ -98,20 +98,6 @@ set_speed() {
 	$gpu_cmd -a [fan:"$fan"]/GPUTargetFanSpeed="$1" $display
 }
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-get_absolute_tdiff() {
-	if [ "$current_t" -le "$ot" ]; then
-		tdiff="$((ot-current_t))"
-	else
-		tdiff="$((current_t-ot))"
-	fi
-}
-
-set_sleep() {
-	if [ "$1" -lt "$s" ]; then
-		s="$1"
-	fi
-}
-
 echo_info() {
 	if [ "$new_spd" -ne "${es[$((ot-mnt))]}" ]; then z="yes"; else z="no"; fi
 	prf "	t=$current_t oldt=$ot tdiff=$tdiff slp=$s gpu=$gpu
@@ -125,12 +111,16 @@ loop_cmds() {
 
 	if [ "$current_t" -ne "$ot" ]; then
 		# Calculate difference and make sure it's positive
-		get_absolute_tdiff
+		if [ "$current_t" -le "$ot" ]; then
+			tdiff="$((ot-current_t))"
+		else
+			tdiff="$((current_t-ot))"
+		fi
 
 		if [ "$tdiff" -le "$chd1" ]; then
-			set_sleep "$long_s"
+			tmp_s="$long_s"
 		elif [ "$tdiff" -lt "$chd2" ]; then
-			set_sleep "$short_s"
+			tmp_s="$short_s"
 		else
 			if [ "$current_t" -lt "$mnt" ]; then
 				new_spd="0"
@@ -140,13 +130,17 @@ loop_cmds() {
 				new_spd="100"
 			fi
 			if [ "$new_spd" -ne "${es[$((ot-mnt))]}" ]; then
-				set_speed "$new_spd"
+				tmp_s="$new_spd"
 			fi
 			old_t["$fan"]="$current_t"
-			set_sleep "$long_s"
+			tmp_s="$long_s"
 		fi
 	else
-		set_sleep "$long_s"
+		tmp_s="$long_s"
+	fi
+
+	if [ "$tmp_s" -lt "$s" ]; then
+		s="$1"
 	fi
 
 	# Uncomment the following line if you want to log stuff
