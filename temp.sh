@@ -14,7 +14,8 @@ usage="Usage: $(basename "$0") [OPTION]...
 where:
 -h  show this help text
 -c  configuration file (default: $PWD/config)
--d  display device string (e.g. \":0\", \"CRT-0\"), defaults to auto detection"
+-d  display device string (e.g. \":0\", \"CRT-0\"), defaults to auto detection
+-D  run in daemon mode (background process)"
 
 { \unalias command; \unset -f command; } >/dev/null 2>&1
 [ -n "$ZSH_VERSION" ] && options[POSIX_BUILTINS]=on
@@ -36,15 +37,17 @@ else
 fi
 conf_file=$(dirname -- "$conf_file")"/config"
 
-while getopts ":h :c: :d:" opt; do
+while getopts ":h :c: :d: :D" opt; do
 	case $opt in
 		c) conf_file="$OPTARG";;
 		d) display="-c $OPTARG";;
-		h) prf "$usage" >&2; exit;;
-		\?) prf "Invalid option: -$OPTARG" >&2;;
-		:) prf "Option -$OPTARG requires an argument." >&2; exit;;
+		h) e=1; prf "$usage" >&2;;
+		D) e=1; nohup ./temp.sh >/dev/null 2>&1 &;;
+		\?) e=1; prf "Invalid option: -$OPTARG" >&2;;
+		:) e=1; prf "Option -$OPTARG requires an argument." >&2;;
 	esac
 done
+if [ "$e" -eq "1" ]; then exit; fi
 
 # Catches when something quits the script, and resets fan control
 finish() {
