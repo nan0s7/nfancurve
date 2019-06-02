@@ -15,7 +15,6 @@ If you need any help configuring my script or don't know how to make it start au
 - easy to read code, with plentiful comments (beginner friendly)
 - "intelligently" adjusts the time between tempurature readings
 - very lightweight
-- easy-to-use update script that uses `git`
 - supports multiple GPU control
 - makes use of a config file with explanations for each setting
 
@@ -25,7 +24,6 @@ If you need any help configuring my script or don't know how to make it start au
 - **_nvidia-settings_** for controlling the GPU(s)
 - **_coreutils_** for printf, etc.
 - **_procps_** in version 14 and greater - you can comment out the function `check_already_running` if you don't have it
-- **_git_** is needed for use of `update.sh` (it'll check for it when it's run)
 
 ## How to install
 ### GitHub
