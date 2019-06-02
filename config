@@ -33,7 +33,9 @@ declare -a tcurve2=( "35" "45" "55" "65" "75" )
 #  fan. The same goes for the number 2.
 declare -a which_curve=( "1" "2" "1" "2" )
 
-# 
+# Only used for single-fan operation. If you have more than one gpu/fan but
+#  only want to control one of them, select which one here. Otherwise there
+#  is no need to change this setting.
 default_fan="0"
 
 # Similar to which_curve, but instead lets the script know which of the GPU's
