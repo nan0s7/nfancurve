@@ -32,20 +32,17 @@ If you need any help configuring my script or don't know how to make it start au
 - Download the .zip file straight from the GitHubs
 - Extract it somewhere, and open a terminal to that directory
 - Make sure `CoolBits` is enabled (see [USAGE.md](USAGE.md))
-- ~~Run `./temp.sh` for a foreground process, or `./update.sh` for a background* one~~
-- Run `bash temp.sh` (or any compatable shell) or `./temp.sh` for a foreground process*
+- Run `bash temp.sh` (or any compatable shell) or `./temp.sh` for a foreground process. Run with the option `-D` (case sensitive) for a background process (i.e. `./temp.sh -D`).
 
 ### git
 - Choose a folder you want to download/install the script in
 - `git clone https://github.com/nan0s7/nfancurve`
-- See instructions for **GitHub** for the rest
+- Follow the last two steps under the **GitHub** guide area
 
 ### Arch Linux
 There are unofficial AUR packages maintained by [@Scrumplex](https://github.com/Scrumplex).
 - Stable: [nfancurve](https://aur.archlinux.org/packages/nfancurve/)<sup>AUR</sup>
 - Git Master: [nfancurve-git](https://aur.archlinux.org/packages/nfancurve-git/)<sup>AUR</sup>
-
-*or just execute this command for a background process: `nohup ./temp.sh >/dev/null 2>&1 &`, or `nohup bash temp.sh >/dev/null 2>&1 &`
 
 ## Honourable mentions
 - [@aryonoco](https://github.com/aryonoco), for being my multi-GPU guinea pig
@@ -63,5 +60,6 @@ There are unofficial AUR packages maintained by [@Scrumplex](https://github.com/
 - add in a **really** detailed guide of how the script works
 - add nouveau support (once they fix Pascal)
 - add AMD support?
+- make fans controllable without needing to use the `nvidia-settings` app (for headless support)
 - add support for GPU's that have more than one controllable fan (i.e. >1 fan controller)
 - make it completely POSIX compliant
