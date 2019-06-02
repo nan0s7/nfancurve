@@ -17,7 +17,7 @@ If you need any help configuring my script or don't know how to make it start au
 - very lightweight
 - easy-to-use update script that uses `git`
 - supports multiple GPU control
-- now uses a config file that doesn't get overwritten after updates
+- makes use of a config file with explanations for each setting
 
 ## Prerequisites
 - **_bash_** version 4 and above, or a bash-like shell with the same syntax (others untested)
