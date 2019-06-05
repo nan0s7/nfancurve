@@ -19,8 +19,8 @@ If you need any help configuring my script or don't know how to make it start au
 - makes use of a config file with explanations for each setting
 
 ## Prerequisites
-- `Bash` version 4 and above, or a bash-like shell with the same syntax (others untested)
-- `NVIDIA GLX Driver` version greater than 304
+- `bash` version 4 and above, or a bash-like shell with the same syntax (others untested)
+- `nvidia glx driver` version greater than 304
 - `nvidia-settings` for controlling the GPU(s)
 - `coreutils` for printf, etc.
 - `procps` - you can comment out the function `check_already_running` if you don't have it
