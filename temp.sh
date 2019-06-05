@@ -7,19 +7,21 @@ num_fans="0"; current_t="0"; check_diff11=""; check_diff12=""; z=$0; fname=""
 fcurve_len="0"; num_gpus_loop="0"; declare -a old_t=(); declare -a exp_sp=()
 mnt=0; mxt=0; ot=0; declare -a es=(); fcurve_len2="0"; declare -a exp_sp2=()
 max_t2="0"; check_diff21=""; check_diff22=""; num_fans_loop="0"; tmp_s="0"
-gpu_cmd="nvidia-settings"
+debug="0"; e="0"; gpu_cmd="nvidia-settings"
 
 usage="Usage: $(basename "$0") [OPTION]...
 
 where:
--h  show this help text
 -c  configuration file (default: $PWD/config)
 -d  display device string (e.g. \":0\", \"CRT-0\"), defaults to auto detection
--D  run in daemon mode (background process)"
+-D  run in daemon mode (background process)
+-h  show this help text
+-l  enable logging to stdout
+-v  show the current version of this script"
 
 { \unalias command; \unset -f command; } >/dev/null 2>&1
 [ -n "$ZSH_VERSION" ] && options[POSIX_BUILTINS]=on
-while :; do
+while true; do
 	[ -L "$z" ] || [ -e "$z" ] || { prf "'$z' is invalid" >&2; exit 1; }
 	command cd "$(command dirname -- "$z")"
 	fname=$(command basename -- "$z"); [ "$fname" = '/' ] && fname=''
@@ -37,23 +39,19 @@ else
 fi
 conf_file=$(dirname -- "$conf_file")"/config"
 
-while getopts ":h :c: :d: :D" opt; do
+while getopts ":h :c: :d: :D :l :v" opt; do
 	case $opt in
 		c) conf_file="$OPTARG";;
 		d) display="-c $OPTARG";;
 		h) e=1; prf "$usage" >&2;;
 		D) e=1; nohup ./temp.sh >/dev/null 2>&1 &;;
+		l) debug="1";;
+		v) e=1; prf "Version 17";;
 		\?) e=1; prf "Invalid option: -$OPTARG" >&2;;
 		:) e=1; prf "Option -$OPTARG requires an argument." >&2;;
 	esac
 done
 if [ "$e" -eq "1" ]; then exit; fi
-
-# Catches when something quits the script, and resets fan control
-finish() {
-	set_fan_control "$num_gpus_loop" "0"
-	prf "Fan control set back to auto mode"
-}; trap finish EXIT
 
 prf "
 ################################################################################
@@ -64,7 +62,7 @@ prf "
 # FUNCTIONS THAT REQUIRE CERTAIN DEPENDENCIES TO BE MET
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # DEPENDS: PROCPS
-check_already_running() {
+kill_already_running() {
 	tmp="$(pgrep -c temp.sh)"
 	if [ "$tmp" -ge "2" ]; then
 		for i in $(seq 1 "$((tmp-1))"); do
@@ -73,15 +71,7 @@ check_already_running() {
 		done
 	fi
 }
-
 # DEPENDS: NVIDIA-SETTINGS
-check_driver() {
-	tmp="$($gpu_cmd -v)"
-	if [ "${tmp:27:3}" -lt "304" ]; then
-		prf "Unsupported driver version detected ${tmp:27:3}"; exit 1
-	fi
-}
-
 get_temp() {
 	current_t="$($gpu_cmd -q=[gpu:"$gpu"]/GPUCoreTemp -t $display)"
 }
@@ -90,7 +80,6 @@ get_query() {
 	prf "$($gpu_cmd -q "$1" $display)"
 }
 
-# Enable/disable fan control (if CoolBits is enabled) - see USAGE.md
 set_fan_control() {
 	for i in $(seq 0 "$1"); do
 		$gpu_cmd -a [gpu:"$i"]/GPUFanControlState="$2" $display
@@ -100,9 +89,14 @@ set_fan_control() {
 set_speed() {
 	$gpu_cmd -a [fan:"$fan"]/GPUTargetFanSpeed="$1" $display
 }
+
+finish() {
+	set_fan_control "$num_gpus_loop" "0"
+	prf "Fan control set back to auto mode"
+}; trap finish EXIT
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 echo_info() {
-	if [ "$new_spd" -ne "${es[$((ot-mnt))]}" ]; then z="yes"; else z="no"; fi
+	if [ "$new_spd" -ne "${es[$((ot-mnt))]}" ]; then z="y"; else z="n"; fi
 	prf "	t=$current_t oldt=$ot tdiff=$tdiff slp=$s gpu=$gpu
 	nspd?=${es[$((current_t-mnt))]} nspd=$new_spd cd=$chd1 maxt=$mxt
 	cd2=$chd2 mint=$mnt oldspd=${es[$((ot-mnt))]} fan=$fan z=$z
@@ -120,10 +114,8 @@ loop_cmds() {
 			tdiff="$((current_t-ot))"
 		fi
 
-		if [ "$tdiff" -le "$chd1" ]; then
-			tmp_s="$long_s"
-		elif [ "$tdiff" -lt "$chd2" ]; then
-			tmp_s="$short_s"
+		if [ "$tdiff" -lt "$chd2" ]; then
+			s="$short_s"
 		else
 			if [ "$current_t" -lt "$mnt" ]; then
 				new_spd="0"
@@ -136,29 +128,23 @@ loop_cmds() {
 				tmp_s="$new_spd"
 			fi
 			old_t["$fan"]="$current_t"
-			tmp_s="$long_s"
 		fi
-	else
-		tmp_s="$long_s"
 	fi
 
-	if [ "$tmp_s" -lt "$s" ]; then
-		s="$1"
+	if [ "$debug" -eq "1" ]; then
+		echo_info
 	fi
-
-	# Uncomment the following line if you want to log stuff
-	echo_info
 }
 
-check_already_running
-check_driver
+kill_already_running
 
+# Load the config file
 if ! [ -f "$conf_file" ]; then
 	prf "Config file not found." >&2; exit 1
 fi
-
 source "$conf_file"; prf "Configuration file: $conf_file"
 
+# Check for any user errors in config file
 if ! [ "${#fcurve[@]}" -eq "${#tcurve[@]}" ]; then
 	prf "fcurve and tcurve don't match up!"; exit 1
 fi
@@ -172,9 +158,11 @@ if [ "$min_t2" -ge "${tcurve2[1]}" ]; then
 	prf "min_t2 is greater than the first value in the tcurve2!"; exit 1
 fi
 
+# Calculate some more values
 max_t="${tcurve[-1]}"; max_t2="${tcurve2[-1]}"
 fcurve_len="$((${#fcurve[@]}-1))"; fcurve_len2="$((${#fcurve2[@]}-1))"
 
+# Get the system's GPU configuration
 num_fans=$(get_query "fans"); num_fans="${num_fans%* Fan on*}"
 if [ -z "$num_fans" ]; then
 	prf "No Fans detected"; exit 1
@@ -183,7 +171,6 @@ elif [ "${#num_fans}" -gt "2" ]; then
 else
 	prf "Number of Fans detected:"$num_fans
 fi
-
 num_gpus=$(get_query "gpus"); num_gpus="${num_gpus%* GPU on*}"
 if [ -z "$num_gpus" ]; then
 	prf "No GPUs detected"; exit 1
@@ -197,16 +184,16 @@ fi
 for i in $(seq 0 "$num_fans_loop"); do
 	old_t["$i"]="0"
 done
-
 for i in $(seq 0 "$((fcurve_len-1))"); do
-	check_diff11="$((check_diff11+tcurve[$((i+1))]-tcurve[$i]))"
+	check_diff11="$((check_diff11+tcurve[$((i+1))]-tcurve[i]))"
 done
 for i in $(seq 0 "$((fcurve_len2-1))"); do
-	check_diff21="$((check_diff21+tcurve2[$((i+1))]-tcurve2[$i]))"
+	check_diff21="$((check_diff21+tcurve2[$((i+1))]-tcurve2[i]))"
 done
-check_diff11="$((check_diff11/fcurve_len))"; prf "tdiff average: $check_diff11"
+check_diff11="$((check_diff11/fcurve_len))"
+# check_diff11 is only used here - can be optimised
 check_diff12="$((check_diff11-long_s+short_s-1))"
-check_diff21="$((check_diff21/fcurve_len2))"; prf "tdiff2 average: $check_diff21"
+check_diff21="$((check_diff21/fcurve_len2))"
 check_diff22="$((check_diff21-long_s+short_s-1))"
 
 set_fan_control "$num_gpus_loop" "1"
@@ -227,18 +214,26 @@ for i in $(seq 0 "$((max_t2-min_t2))"); do
 	done
 done
 
-prf "esp=${exp_sp[@]} espln=${#exp_sp[@]}"
-prf "esp2=${exp_sp2[@]} espln2=${#exp_sp2[@]}"
+# Print some stuff for debugging
+if [ "$debug" -eq "1" ]; then
+	prf "esp=${exp_sp[@]} espln=${#exp_sp[@]}"
+	prf "esp2=${exp_sp2[@]} espln2=${#exp_sp2[@]}"
+	prf "tdiff average: $check_diff11"
+	prf "tdiff2 average: $check_diff21"
+fi
 
 set_stuff() {
 	gpu="${fan2gpu[$1]}"
 	tmp="${which_curve[$1]}"
 
+	# is chd1 ever used?
 	if [ "$tmp" -eq "1" ]; then
-		chd1="$check_diff11"; chd2="$check_diff12"
+#		chd1="$check_diff11"
+		chd2="$check_diff12"
 		mnt="$min_t"; mxt="$max_t"
 	else
-		chd1="$check_diff21"; chd2="$check_diff22"
+#		chd1="$check_diff21"
+		chd2="$check_diff22"
 		mnt="$min_t2"; mxt="$max_t2"
 	fi
 
@@ -267,7 +262,7 @@ else
 			set_stuff "$fan"
 			ot="${old_t[$fan]}"
 			loop_cmds
-		done 
+		done
 		sleep "$s"
 	done
 fi
