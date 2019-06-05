@@ -1,6 +1,6 @@
 nfancurve
 ---------
-You are probably wondering why I have chosen to write this script in Bash. The reason is very simple; I wanted a script with the minimum number of dependencies possible. To get this script up-and-running you _technically_ only need the `temp.sh` file, and the `config` file. If you don't have a certain dependency (i.e. git or procps) you can just remove the code that uses them.
+You are probably wondering why I have chosen to write this script in Bash. The reason is very simple; I wanted a script with the minimum number of dependencies possible. To get this script up-and-running you _technically_ only need the `temp.sh` file, and the `config` file.
 
 The current version of the script is **version 17**.
 
@@ -9,7 +9,7 @@ This script is currently set up for Celsius. However, it can easily be modified 
 If you need any help configuring my script or don't know how to make it start automatically check the [USAGE.md](USAGE.md) file.
 
 ## Features
-- by default it has a slightly aggressive fan curve profile (lower temps, louder noise)
+- uses a more aggressive fan curve than the nvidia default (lower temps, louder noise)
 - uses `nvidia-settings` commands
 - automatically enables/disables GPU fan control (but **not** `CoolBits`)
 - easy to read code, with plentiful comments (beginner friendly)
