@@ -19,11 +19,11 @@ If you need any help configuring my script or don't know how to make it start au
 - makes use of a config file with explanations for each setting
 
 ## Prerequisites
-- **_bash_** version 4 and above, or a bash-like shell with the same syntax (others untested)
-- **_NVIDIA GLX Driver_** version greater than 304
-- **_nvidia-settings_** for controlling the GPU(s)
-- **_coreutils_** for printf, etc.
-- **_procps_** in version 14 and greater - you can comment out the function `check_already_running` if you don't have it
+- `Bash` version 4 and above, or a bash-like shell with the same syntax (others untested)
+- `NVIDIA GLX Driver` version greater than 304
+- `nvidia-settings` for controlling the GPU(s)
+- `coreutils` for printf, etc.
+- `procps` - you can comment out the function `check_already_running` if you don't have it
 
 ## How to install
 ### GitHub
