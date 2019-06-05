@@ -9,13 +9,11 @@ This script is currently set up for Celsius. However, it can easily be modified 
 If you need any help configuring my script or don't know how to make it start automatically check the [USAGE.md](USAGE.md) file.
 
 ## Features
-- uses a more aggressive fan curve than the nvidia default (lower temps, louder noise)
+- comes with a more aggressive fan curve than the nvidia default (lower temps, louder noise)
 - uses `nvidia-settings` commands
 - automatically enables/disables GPU fan control (but **not** `CoolBits`)
-- easy to read code, with plentiful comments (beginner friendly)
-- "intelligently" adjusts the time between tempurature readings
 - very lightweight
-- supports multiple GPU control
+- multiple GPU control with individual fan controller support
 - makes use of a config file with explanations for each setting
 
 ## Prerequisites
