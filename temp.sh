@@ -38,7 +38,7 @@ else
 fi
 conf_file=$(dirname -- "$conf_file")"/config"
 
-while getopts ":h :c: :d: :D :l :v" opt; do
+while getopts ":h :c: :d: :D :l :v :x" opt; do
 	case $opt in
 		c) conf_file="$OPTARG";;
 		d) display="-c $OPTARG";;
@@ -46,6 +46,7 @@ while getopts ":h :c: :d: :D :l :v" opt; do
 		D) e=1; nohup ./temp.sh >/dev/null 2>&1 &;;
 		l) debug="1";;
 		v) e=1; prf "Version 17";;
+		x) gpu_cmd="../nssim/nssim nvidia-settings";;
 		\?) e=1; prf "Invalid option: -$OPTARG" >&2;;
 		:) e=1; prf "Option -$OPTARG requires an argument." >&2;;
 	esac
@@ -212,29 +213,31 @@ done
 
 # Print some stuff for debugging
 if [ "$debug" -eq "1" ]; then
-	prf "esp=${exp_sp[@]} espln=${#exp_sp[@]}"
-	prf "esp2=${exp_sp2[@]} espln2=${#exp_sp2[@]}"
-	prf "tdiff average: $check_diff1"
-	prf "tdiff2 average: $check_diff2"
+	prf "esp=${exp_sp[@]}"; prf "espln=${#exp_sp[@]}"
+	prf "esp2=${exp_sp2[@]}"; prf "espln2=${#exp_sp2[@]}"
+	prf "tdiff average: $check_diff1"; prf "tdiff2 average: $check_diff2"
 fi
 
 set_stuff() {
 	gpu="${fan2gpu[$1]}"
 	tmp="${which_curve[$1]}"
+	i=0
 
 	if [ "$tmp" -eq "1" ]; then
 		chd="$check_diff1"
 		mnt="$min_t"; mxt="$max_t"
+		for element in ${exp_sp[@]}; do
+			es["$i"]="$element"
+			i=$((i+1))
+		done
 	else
 		chd="$check_diff2"
 		mnt="$min_t2"; mxt="$max_t2"
+		for element in ${exp_sp2[@]}; do
+			es["$i"]="$element"
+			i=$((i+1))
+		done
 	fi
-
-	i=0
-	for element in ${exp_sp[@]}; do
-		es["$i"]="$element"
-		i=$((i+1))
-	done
 }
 
 if [ "$num_gpus" -eq "1" ]; then
