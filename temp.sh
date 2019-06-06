@@ -3,11 +3,10 @@
 prf() { printf %s\\n "$*" ; }
 
 s="0"; max_t="0"; tdiff="0"; display=""; new_spd="0"; num_gpus="0"; CDPATH=""
-num_fans="0"; current_t="0"; check_diff11=""; check_diff12=""; z=$0; fname=""
+num_fans="0"; current_t="0"; z=$0; fname=""; check_diff1=""; check_diff2=""
 fcurve_len="0"; num_gpus_loop="0"; declare -a old_t=(); declare -a exp_sp=()
 mnt=0; mxt=0; ot=0; declare -a es=(); fcurve_len2="0"; declare -a exp_sp2=()
-max_t2="0"; check_diff21=""; check_diff22=""; num_fans_loop="0"; tmp_s="0"
-debug="0"; e="0"; gpu_cmd="nvidia-settings"
+max_t2="0"; num_fans_loop="0"; debug="0"; e="0"; gpu_cmd="nvidia-settings"
 
 usage="Usage: $(basename "$0") [OPTION]...
 
@@ -98,8 +97,8 @@ finish() {
 echo_info() {
 	if [ "$new_spd" -ne "${es[$((ot-mnt))]}" ]; then z="y"; else z="n"; fi
 	prf "	t=$current_t oldt=$ot tdiff=$tdiff slp=$s gpu=$gpu
-	nspd?=${es[$((current_t-mnt))]} nspd=$new_spd cd=$chd1 maxt=$mxt
-	cd2=$chd2 mint=$mnt oldspd=${es[$((ot-mnt))]} fan=$fan z=$z
+	nspd?=${es[$((current_t-mnt))]} nspd=$new_spd cd=$chd maxt=$mxt
+	mint=$mnt oldspd=${es[$((ot-mnt))]} fan=$fan z=$z
 	"
 }
 
@@ -114,7 +113,7 @@ loop_cmds() {
 			tdiff="$((current_t-ot))"
 		fi
 
-		if [ "$tdiff" -lt "$chd2" ]; then
+		if [ "$tdiff" -lt "$chd" ]; then
 			s="$short_s"
 		else
 			if [ "$current_t" -lt "$mnt" ]; then
@@ -125,7 +124,7 @@ loop_cmds() {
 				new_spd="100"
 			fi
 			if [ "$new_spd" -ne "${es[$((ot-mnt))]}" ]; then
-				tmp_s="$new_spd"
+				set_speed "$new_spd"
 			fi
 			old_t["$fan"]="$current_t"
 		fi
@@ -185,16 +184,13 @@ for i in $(seq 0 "$num_fans_loop"); do
 	old_t["$i"]="0"
 done
 for i in $(seq 0 "$((fcurve_len-1))"); do
-	check_diff11="$((check_diff11+tcurve[$((i+1))]-tcurve[i]))"
+	check_diff1="$((check_diff1+tcurve[$((i+1))]-tcurve[i]))"
 done
 for i in $(seq 0 "$((fcurve_len2-1))"); do
-	check_diff21="$((check_diff21+tcurve2[$((i+1))]-tcurve2[i]))"
+	check_diff2="$((check_diff2+tcurve2[$((i+1))]-tcurve2[i]))"
 done
-check_diff11="$((check_diff11/fcurve_len))"
-# check_diff11 is only used here - can be optimised
-check_diff12="$((check_diff11-long_s+short_s-1))"
-check_diff21="$((check_diff21/fcurve_len2))"
-check_diff22="$((check_diff21-long_s+short_s-1))"
+check_diff1="$(((check_diff1/fcurve_len)-long_s+short_s-1))"
+check_diff2="$(((check_diff2/fcurve_len2)-long_s+short_s-1))"
 
 set_fan_control "$num_gpus_loop" "1"
 
@@ -218,22 +214,19 @@ done
 if [ "$debug" -eq "1" ]; then
 	prf "esp=${exp_sp[@]} espln=${#exp_sp[@]}"
 	prf "esp2=${exp_sp2[@]} espln2=${#exp_sp2[@]}"
-	prf "tdiff average: $check_diff11"
-	prf "tdiff2 average: $check_diff21"
+	prf "tdiff average: $check_diff1"
+	prf "tdiff2 average: $check_diff2"
 fi
 
 set_stuff() {
 	gpu="${fan2gpu[$1]}"
 	tmp="${which_curve[$1]}"
 
-	# is chd1 ever used?
 	if [ "$tmp" -eq "1" ]; then
-#		chd1="$check_diff11"
-		chd2="$check_diff12"
+		chd="$check_diff1"
 		mnt="$min_t"; mxt="$max_t"
 	else
-#		chd1="$check_diff21"
-		chd2="$check_diff22"
+		chd="$check_diff2"
 		mnt="$min_t2"; mxt="$max_t2"
 	fi
 
