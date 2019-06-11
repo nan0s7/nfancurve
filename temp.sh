@@ -2,11 +2,12 @@
 
 prf() { printf %s\\n "$*" ; }
 
-s="0"; max_t="0"; tdiff="0"; display=""; new_spd="0"; num_gpus="0"; CDPATH=""
-num_fans="0"; current_t="0"; z=$0; fname=""; check_diff1=""; check_diff2=""
+max_t="0"; tdiff="0"; display=""; new_spd="0"; num_gpus="0"; CDPATH=""
+num_fans="0"; current_t="0"; z=$0; fname=""; check_diff1="0"; check_diff2="0"
 fcurve_len="0"; num_gpus_loop="0"; declare -a old_t=(); declare -a exp_sp=()
 mnt=0; mxt=0; ot=0; declare -a es=(); fcurve_len2="0"; declare -a exp_sp2=()
-max_t2="0"; num_fans_loop="0"; debug="0"; e="0"; gpu_cmd="nvidia-settings"
+max_t2="0"; num_fans_loop="0"; debug="0"; e="0"; sleep_override=""
+gpu_cmd="nvidia-settings"
 
 usage="Usage: $(basename "$0") [OPTION]...
 
@@ -16,6 +17,7 @@ where:
 -D  run in daemon mode (background process)
 -h  show this help text
 -l  enable logging to stdout
+-s  set the sleep time (in seconds)
 -v  show the current version of this script"
 
 { \unalias command; \unset -f command; } >/dev/null 2>&1
@@ -38,13 +40,14 @@ else
 fi
 conf_file=$(dirname -- "$conf_file")"/config"
 
-while getopts ":h :c: :d: :D :l :v :x" opt; do
+while getopts ":h :c: :d: :D :l :v :x :s:" opt; do
 	case $opt in
 		c) conf_file="$OPTARG";;
 		d) display="-c $OPTARG";;
 		h) e=1; prf "$usage" >&2;;
 		D) e=1; nohup ./temp.sh >/dev/null 2>&1 &;;
 		l) debug="1";;
+		s) sleep_override="$OPTARG";;
 		v) e=1; prf "Version 17";;
 		x) gpu_cmd="../nssim/nssim nvidia-settings";;
 		\?) e=1; prf "Invalid option: -$OPTARG" >&2;;
@@ -97,10 +100,10 @@ finish() {
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 echo_info() {
 	if [ "$new_spd" -ne "${es[$((ot-mnt))]}" ]; then z="y"; else z="n"; fi
-	prf "	t=$current_t oldt=$ot tdiff=$tdiff slp=$s gpu=$gpu
-	nspd?=${es[$((current_t-mnt))]} nspd=$new_spd cd=$chd maxt=$mxt
-	mint=$mnt oldspd=${es[$((ot-mnt))]} fan=$fan z=$z
-	"
+	e=" t=$current_t oldt=$ot tdiff=$tdiff slp=$sleep_time gpu=$gpu z=$z"
+	e="$e nspd?=${es[$((current_t-mnt))]} nspd=$new_spd cd=$chd maxt=$mxt"
+	e="$e mint=$mnt oldspd=${es[$((ot-mnt))]} fan=$fan"
+	prf "$e"
 }
 
 loop_cmds() {
@@ -114,9 +117,7 @@ loop_cmds() {
 			tdiff="$((current_t-ot))"
 		fi
 
-		if [ "$tdiff" -lt "$chd" ]; then
-			s="$short_s"
-		else
+		if [ "$tdiff" -ge "$chd" ]; then
 			if [ "$current_t" -lt "$mnt" ]; then
 				new_spd="0"
 			elif [ "$current_t" -lt "$mxt" ]; then
@@ -128,6 +129,7 @@ loop_cmds() {
 				set_speed "$new_spd"
 			fi
 			old_t["$fan"]="$current_t"
+			tdiff="0"
 		fi
 	fi
 
@@ -143,6 +145,8 @@ if ! [ -f "$conf_file" ]; then
 	prf "Config file not found." >&2; exit 1
 fi
 source "$conf_file"; prf "Configuration file: $conf_file"
+
+if ! [ -z "$sleep_override" ]; then sleep_time="$sleep_override"; fi
 
 # Check for any user errors in config file
 if ! [ "${#fcurve[@]}" -eq "${#tcurve[@]}" ]; then
@@ -190,8 +194,8 @@ done
 for i in $(seq 0 "$((fcurve_len2-1))"); do
 	check_diff2="$((check_diff2+tcurve2[$((i+1))]-tcurve2[i]))"
 done
-check_diff1="$(((check_diff1/fcurve_len)-long_s+short_s-1))"
-check_diff2="$(((check_diff2/fcurve_len2)-long_s+short_s-1))"
+check_diff1="$(((check_diff1/(fcurve_len-1))-sleep_time))"
+check_diff2="$(((check_diff2/(fcurve_len2-1))-sleep_time))"
 
 set_fan_control "$num_gpus_loop" "1"
 
@@ -245,20 +249,18 @@ if [ "$num_gpus" -eq "1" ]; then
 	fan="$default_fan"
 	set_stuff "$fan"
 	while true; do
-		s="$long_s"
 		ot="${old_t[$fan]}"
 		loop_cmds
-		sleep "$s"
+		sleep "$sleep_time"
 	done
 else
 	prf "Started process for n-GPUs and n-Fans"
 	while true; do
-		s="$long_s"
 		for fan in $(seq 0 "$num_fans_loop"); do
 			set_stuff "$fan"
 			ot="${old_t[$fan]}"
 			loop_cmds
 		done
-		sleep "$s"
+		sleep "$sleep_time"
 	done
 fi
