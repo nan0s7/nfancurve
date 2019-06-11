@@ -244,7 +244,7 @@ set_stuff() {
 	fi
 }
 
-if [ "$num_gpus" -eq "1" ]; then
+if [ "$num_gpus" -eq "1" ] && [ "$num_fans" -eq "1" ]; then
 	prf "Started process for 1 GPU and 1 Fan"
 	fan="$default_fan"
 	set_stuff "$fan"
