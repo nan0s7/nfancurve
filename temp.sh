@@ -48,7 +48,7 @@ while getopts ":h :c: :d: :D :l :v :x :s:" opt; do
 		D) e=1; nohup ./temp.sh >/dev/null 2>&1 &;;
 		l) debug="1";;
 		s) sleep_override="$OPTARG";;
-		v) e=1; prf "Version 17";;
+		v) e=1; prf "Version 18";;
 		x) gpu_cmd="../nssim/nssim nvidia-settings";;
 		\?) e=1; prf "Invalid option: -$OPTARG" >&2;;
 		:) e=1; prf "Option -$OPTARG requires an argument." >&2;;

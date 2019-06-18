@@ -2,7 +2,7 @@ nfancurve
 ---------
 You are probably wondering why I have chosen to write this script in Bash. The reason is very simple; I wanted a script with the minimum number of dependencies possible. To get this script up-and-running you _technically_ only need the `temp.sh` file, and the `config` file.
 
-The current version of the script is **version 17**.
+The current version of the script is **version 18**.
 
 This script is currently set up for Celsius. However, it can easily be modified for other temperature scales.
 
@@ -49,6 +49,8 @@ There are unofficial AUR packages maintained by [@Scrumplex](https://github.com/
 - [@stefmitropoulos](https://github.com/stefmitropoulos), for greatly improving the way config files are loaded
 - [@mklement0](https://stackoverflow.com/users/45375/mklement0), (stackoverflow) for a [POSIX implimentation](https://stackoverflow.com/questions/29832037/how-to-get-script-directory-in-posix-sh) of resolving file symlinks
 - [@xberg](https://github.com/xberg), for finding and fixing a bug with the multi-GPU side of the script
+- [@edave](https://github.com/edave), for helping test the initial implimentation of multi-fan GPU support
+- [@louissmit](https://github.com/louissmit), for helping test the final multi-fan GPU feature implimentation
 
 ## TODO
 - ~~make sure that "CoolBits" is enabled~~ - _not really the scope of this script_
