@@ -19,6 +19,12 @@ sleep_time="7"
 fcurve="25 40 55 70 85" # fan speeds
 tcurve="35 45 55 65 75" # temperatures
 
+# This value is used to determine the temperature difference needed to get
+#  the script to check for a new speed to apply. The default of this value
+#  is zero, which means the script will automatically calculate a value
+#  based on the temperature curves supplied below
+force_check="0"
+
 # These two arrays are for GPU's that have a secondary fan that you may wish
 #  to control seperately, especially if it is water-cooled.
 fcurve2="15 30 45 60 75"
