@@ -6,7 +6,7 @@ z=$0; display=""; CDPATH=""; fname=""; num_gpus="0"; num_fans="0"; debug="0"
 max_t="0"; max_t2="0"; mnt=0; mxt=0; ot=0; tdiff="0"; cur_t="0"; e="0"
 new_spd="0"; old_spd="0"; old_t="0"; check_diff1="0"; check_diff2="0"
 fcurve_len="0"; fcurve_len2="0"; num_gpus_loop="0"; num_fans_loop="0"
-sleep_override=""; gpu_cmd="nvidia-settings"
+ot_elem="-1"; sleep_override=""; gpu_cmd="nvidia-settings"
 
 usage="Usage: $(basename "$0") [OPTION]...
 
@@ -100,35 +100,9 @@ finish() {
 echo_info() {
 	e=" t=$cur_t oldt=$ot tdiff=$tdiff slp=$sleep_time gpu=$gpu"
 	e="$e nspd=$new_spd ospd=$old_spd cd=$chd maxt=$mxt"
-	e="$e mint=$mnt fan=$fan"
+	e="$e otel=$ot_elem mint=$mnt fan=$fan"
 	prf "$e"
 }
-
-compare_spd() {
-	if [ "$cur_t" -gt "$mnt" ]; then
-		i=0
-		for temp in $tc; do
-			if [ "$cur_t" -le "$temp" ]; then
-				elem="$i"
-				break
-			else
-				i=$((i+1))
-			fi
-		done
-		i=0
-		for speed in $fc; do
-			if [ "$i" -eq "$elem" ]; then
-				new_spd="$speed"
-				break
-			else
-				i=$((i+1))
-			fi
-		done
-	else
-		new_spd="0"
-	fi
-}
-
 
 arr_size() {
 	arr_len=0
@@ -148,6 +122,29 @@ re_elem() {
 	done
 }
 
+compare_spd() {
+	i=0
+	for temp in $tc; do
+		if [ "$cur_t" -le "$temp" ]; then
+			break
+		else
+			i=$((i+1))
+		fi
+	done
+	if [ "$i" -ne "$ot_elem" ]; then
+		j=0
+		for speed in $fc; do
+			if [ "$j" -eq "$i" ]; then
+				new_spd="$speed"
+				break
+			else
+				j=$((j+1))
+			fi
+		done
+		ot_elem="$i"
+	fi
+}
+
 loop_cmds() {
 	get_temp
 
@@ -161,7 +158,7 @@ loop_cmds() {
 
 		if [ "$tdiff" -ge "$chd" ]; then
 			if [ "$cur_t" -lt "$mnt" ]; then
-				new_spd="0"
+				new_spd="0"; ot_elem="-1"
 			elif [ "$cur_t" -lt "$mxt" ]; then
 				compare_spd
 			else
@@ -171,13 +168,13 @@ loop_cmds() {
 				spd="$new_spd"; set_speed
 				old_spd="$new_spd"
 			fi
-			tmp=""
 			i=0
-			for elem in $old_t; do
-				if [ "$i" -eq "$fan" ]; then
-					tmp="$tmp $cur_t"
+			tmp="$old_t"; old_t=""
+			for elem in $tmp; do
+				if [ "$i" -ne "$fan" ]; then
+					old_t="$old_t $elem"
 				else
-					tmp="$tmp $elem"
+					old_t="$old_t $cur_t"
 				fi
 				i="$((i+1))"
 			done
@@ -249,38 +246,38 @@ for i in $(seq 1 "$num_fans_loop"); do
 	old_t="$old_t 0"
 done
 
-for j in $(seq 0 "$((fcurve_len-1))"); do
-	arr="$tcurve"; n="$((j+1))"; re_elem; tmp1="$elem"
-	arr="$tcurve"; n="$j"; re_elem; tmp2="$elem"
-	check_diff1="$((check_diff1+tmp1-tmp2))"
-done
-check_diff1="$(((check_diff1/(fcurve_len-1))-sleep_time))"
-for j in $(seq 0 "$((fcurve_len2-1))"); do
-	arr="$tcurve2"; n="$((j+1))"; re_elem; tmp1="$elem"
-	arr="$tcurve2"; n="$j"; re_elem; tmp2="$elem"
-	check_diff2="$((check_diff2+tmp1-tmp2))"
-done
-check_diff2="$(((check_diff2/(fcurve_len2-1))-sleep_time))"
+if [ "$force_check" -eq "0" ]; then
+	for j in $(seq 0 "$((fcurve_len-1))"); do
+		arr="$tcurve"; n="$((j+1))"; re_elem; tmp1="$elem"
+		arr="$tcurve"; n="$j"; re_elem; tmp2="$elem"
+		check_diff1="$((check_diff1+tmp1-tmp2))"
+	done
+	check_diff1="$(((check_diff1/(fcurve_len-1))-sleep_time))"
+	for j in $(seq 0 "$((fcurve_len2-1))"); do
+		arr="$tcurve2"; n="$((j+1))"; re_elem; tmp1="$elem"
+		arr="$tcurve2"; n="$j"; re_elem; tmp2="$elem"
+		check_diff2="$((check_diff2+tmp1-tmp2))"
+	done
+	check_diff2="$(((check_diff2/(fcurve_len2-1))-sleep_time))"
+else
+	check_diff1="$force_check"; check_diff2="$force_check"
+fi
 
 set_fan_control "$num_gpus_loop" "1"
 
 set_stuff() {
-	arr="$fan2gpu"; n="$fan"; re_elem
-	gpu="$elem"
-	arr="$which_curve"; n="$fan"; re_elem
-	tmp="$elem"
+	arr="$fan2gpu"; n="$fan"; re_elem; gpu="$elem"
+	arr="$which_curve"; n="$fan"; re_elem; tmp="$elem"
 	i=0
 
 	if [ "$tmp" -eq "1" ]; then
 		chd="$check_diff1"
 		mnt="$min_t"; mxt="$max_t"
-		tc="$tcurve"
-		fc="$fcurve"
+		tc="$tcurve"; fc="$fcurve"
 	else
 		chd="$check_diff2"
 		mnt="$min_t2"; mxt="$max_t2"
-		tc="$tcurve2"
-		fc="$fcurve2"
+		tc="$tcurve2"; fc="$fcurve2"
 	fi
 }
 
@@ -289,8 +286,7 @@ if [ "$num_gpus" -eq "1" ] && [ "$num_fans" -eq "1" ]; then
 	fan="$default_fan"
 	set_stuff
 	while true; do
-		arr="$old_t"; n="$fan"; re_elem
-		ot="$elem"
+		arr="$old_t"; n="$fan"; re_elem; ot="$elem"
 		loop_cmds
 		sleep "$sleep_time"
 	done
@@ -299,8 +295,7 @@ else
 	while true; do
 		for fan in $(seq 0 "$num_fans_loop"); do
 			set_stuff
-			arr="$old_t"; n="$fan"; re_elem
-			ot="$elem"
+			arr="$old_t"; n="$fan"; re_elem; ot="$elem"
 			loop_cmds
 		done
 		sleep "$sleep_time"
