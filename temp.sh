@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 prf() { printf %s\\n "$*" ; }
 
@@ -39,21 +39,30 @@ else
 fi
 conf_file=$(dirname -- "$conf_file")"/config"
 
-while getopts ":h :c: :d: :D :l :v :x :s:" opt; do
-	case $opt in
-		c) conf_file="$OPTARG";;
-		d) display="-c $OPTARG";;
-		h) e=1; prf "$usage" >&2;;
-		D) e=1; nohup ./temp.sh >/dev/null 2>&1 &;;
-		l) debug="1";;
-		s) sleep_override="$OPTARG";;
-		v) e=1; prf "Version 18";;
-		x) gpu_cmd="../nssim/nssim nvidia-settings";;
-		\?) e=1; prf "Invalid option: -$OPTARG" >&2;;
-		:) e=1; prf "Option -$OPTARG requires an argument." >&2;;
-	esac
+while getopts ":c: :d: :D :h :l :s: :v :x" opt; do
+	if [ "$opt" = "c" ]; then
+		conf_file="$OPTARG"
+	elif [ "$opt" = "d" ]; then
+		display="-c $OPTARG"
+	elif [ "$opt" = "D" ]; then
+		nohup sh temp.sh >/dev/null 2>&1 &
+		exit 1
+	elif [ "$opt" = "h" ]; then
+		prf "$usage"; exit 0
+	elif [ "$opt" = "l" ]; then
+		debug="1"
+	elif [ "$opt" = "s" ]; then
+		sleep_override="$OPTARG"
+	elif [ "$opt" = "v" ]; then
+		prf "Version 18"; exit 0
+	elif [ "$opt" = "x" ]; then
+		gpu_cmd="../nssim/nssim nvidia-settings"
+	elif [ "$opt" = ":" ]; then
+		prf "Option -$OPTARG requires an argument"
+	else
+		prf "Invalid option: -$OPTARG"; exit 1
+	fi
 done
-if [ "$e" -eq "1" ]; then exit; fi
 
 prf "
 ################################################################################
@@ -114,10 +123,10 @@ arr_size() {
 re_elem() {
 	i=0
 	for elem in $arr; do
-		if [ "$i" -eq "$n" ]; then
-			break
-		else
+		if [ "$i" -ne "$n" ]; then
 			i=$((i+1))
+		else
+			break
 		fi
 	done
 }
@@ -193,7 +202,7 @@ kill_already_running
 if ! [ -f "$conf_file" ]; then
 	prf "Config file not found." >&2; exit 1
 fi
-source "$conf_file"; prf "Configuration file: $conf_file"
+. "$conf_file"; prf "Configuration file: $conf_file"
 
 if [ -n "$sleep_override" ]; then sleep_time="$sleep_override"; fi
 
