@@ -1,6 +1,6 @@
 nfancurve
 ---------
-You are probably wondering why I have chosen to write this script in Bash. The reason is very simple; I wanted a script with the minimum number of dependencies possible. To get this script up-and-running you _technically_ only need the `temp.sh` file, and the `config` file.
+You are probably wondering why I have chosen to write this script in ~~Bash~~ Shell Script. The reason is very simple; I wanted a script with the minimum number of dependencies possible. To get this script up-and-running you _technically_ only need the `temp.sh` file, and the `config` file.
 
 The current version of the script is **version 18**.
 
@@ -15,9 +15,10 @@ If you need any help configuring my script or don't know how to make it start au
 - very lightweight
 - multiple GPU control with individual fan controller support
 - makes use of a config file with explanations for each setting
+- POSIX compliant
 
 ## Prerequisites
-- `bash` version 4 and above, or a bash-like shell with the same syntax (others untested)
+- `bash` version 4 and above, or a POSIX shell with the same syntax (`dash` tested)
 - `nvidia glx driver` version greater than 304
 - `nvidia-settings` for controlling the GPU(s)
 - `coreutils` for printf, etc.
@@ -28,7 +29,7 @@ If you need any help configuring my script or don't know how to make it start au
 - Download the .zip file straight from the GitHubs
 - Extract it somewhere, and open a terminal to that directory
 - Make sure `CoolBits` is enabled (see [USAGE.md](USAGE.md))
-- Run `bash temp.sh` (or any compatable shell) or `./temp.sh` for a foreground process. Run with the option `-D` (case sensitive) for a background process (i.e. `./temp.sh -D`).
+- Run `sh temp.sh` (or any compatable shell) or `./temp.sh` for a foreground process. Run with the option `-D` (case sensitive) for a background process (i.e. `./temp.sh -D`). Note that using `sh` and `./` will default to your default shell.
 
 ### git
 - Choose a folder you want to download/install the script in
@@ -60,4 +61,3 @@ There are unofficial AUR packages maintained by [@Scrumplex](https://github.com/
 - add AMD support?
 - make fans controllable without needing to use the `nvidia-settings` app (for headless support)
 - add support for GPU's that have more than one controllable fan (i.e. >1 fan controller)
-- make it completely POSIX compliant
