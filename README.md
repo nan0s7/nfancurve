@@ -29,7 +29,7 @@ If you need any help configuring my script or don't know how to make it start au
 - Download the .zip file straight from the GitHubs
 - Extract it somewhere, and open a terminal to that directory
 - Make sure `CoolBits` is enabled (see [USAGE.md](USAGE.md))
-- Run `sh temp.sh` (or any compatable shell) or `./temp.sh` for a foreground process. Run with the option `-D` (case sensitive) for a background process (i.e. `./temp.sh -D`). Note that using `sh` and `./` will default to your default shell.
+- Run `sh temp.sh` (or any compatable shell) or `./temp.sh` for a foreground process. Run with the option `-D` (case sensitive) for a background process (i.e. `./temp.sh -D`). Note that using `sh` or `./` will automatically use your default shell.
 
 ### git
 - Choose a folder you want to download/install the script in
