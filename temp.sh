@@ -3,7 +3,7 @@
 prf() { printf %s\\n "$*" ; }
 
 z=$0; display=""; CDPATH=""; fname=""; num_gpus="0"; num_fans="0"; debug="0"
-max_t="0"; max_t2="0"; mnt=0; mxt=0; ot=0; tdiff="0"; cur_t="0"; e="0"
+max_t="0"; max_t2="0"; mnt=0; mxt=0; ot=0; tdiff="0"; cur_t="0"
 new_spd="0"; old_spd="0"; old_t="0"; check_diff1="0"; check_diff2="0"
 fcurve_len="0"; fcurve_len2="0"; num_gpus_loop="0"; num_fans_loop="0"
 ot_elem="-1"; sleep_override=""; gpu_cmd="nvidia-settings"
@@ -27,8 +27,7 @@ while true; do
 	fname=$(command basename -- "$z"); [ "$fname" = '/' ] && fname=''
 	if [ -L "$fname" ]; then
 		z=$(command ls -l "$fname"); z=${z#* -> }; continue
-	fi
-	break
+	fi; break
 done; conf_file=$(command pwd -P)
 if [ "$fname" = '.' ]; then
 	conf_file=${conf_file%/}
@@ -40,21 +39,15 @@ fi
 conf_file=$(dirname -- "$conf_file")"/config"
 
 while getopts ":c: :d: :D :h :l :s: :v :x" opt; do
-	if [ "$opt" = "c" ]; then
-		conf_file="$OPTARG"
-	elif [ "$opt" = "d" ]; then
-		display="-c $OPTARG"
+	if [ "$opt" = "c" ]; then conf_file="$OPTARG"
+	elif [ "$opt" = "d" ]; then display="-c $OPTARG"
 	elif [ "$opt" = "D" ]; then
 		nohup sh temp.sh >/dev/null 2>&1 &
 		exit 1
-	elif [ "$opt" = "h" ]; then
-		prf "$usage"; exit 0
-	elif [ "$opt" = "l" ]; then
-		debug="1"
-	elif [ "$opt" = "s" ]; then
-		sleep_override="$OPTARG"
-	elif [ "$opt" = "v" ]; then
-		prf "Version 18"; exit 0
+	elif [ "$opt" = "h" ]; then prf "$usage"; exit 0
+	elif [ "$opt" = "l" ]; then debug="1"
+	elif [ "$opt" = "s" ]; then sleep_override="$OPTARG"
+	elif [ "$opt" = "v" ]; then prf "Version 18"; exit 0
 	elif [ "$opt" = "x" ]; then
 		gpu_cmd="../nssim/nssim nvidia-settings"
 	elif [ "$opt" = ":" ]; then
@@ -75,11 +68,9 @@ prf "
 # DEPENDS: PROCPS
 kill_already_running() {
 	tmp="$(pgrep -c temp.sh)"
-	if [ "$tmp" -ge "2" ]; then
-		for i in $(seq 1 "$((tmp-1))"); do
-			process_pid="$(pgrep -o temp.sh)"
-			kill "$process_pid"; prf "Killed $process_pid"
-		done
+	if [ "$tmp" -gt "1" ]; then
+		process_pid="$(pgrep -o temp.sh)"
+		kill "$process_pid"; prf "Killed $process_pid"
 	fi
 }
 # DEPENDS: NVIDIA-SETTINGS
@@ -103,13 +94,12 @@ set_speed() {
 
 finish() {
 	set_fan_control "$num_gpus_loop" "0"
-	prf "Fan control set back to auto mode"
-}; trap finish EXIT
+	prf "Fan control set back to auto mode"; exit 0
+}; trap " finish" INT
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 echo_info() {
-	e=" t=$cur_t oldt=$ot tdiff=$tdiff slp=$sleep_time gpu=$gpu"
-	e="$e nspd=$new_spd ospd=$old_spd cd=$chd maxt=$mxt"
-	e="$e otel=$ot_elem mint=$mnt fan=$fan"
+	e=" t=$cur_t ot=$ot td=$tdiff s=$sleep_time gpu=$gpu fan=$fan cd=$chd"
+	e="$e nsp=$new_spd osp=$old_spd maxt=$mxt mint=$mnt ote=$ot_elem"
 	prf "$e"
 }
 
@@ -131,29 +121,6 @@ re_elem() {
 	done
 }
 
-compare_spd() {
-	i=0
-	for temp in $tc; do
-		if [ "$cur_t" -le "$temp" ]; then
-			break
-		else
-			i=$((i+1))
-		fi
-	done
-	if [ "$i" -ne "$ot_elem" ]; then
-		j=0
-		for speed in $fc; do
-			if [ "$j" -eq "$i" ]; then
-				new_spd="$speed"
-				break
-			else
-				j=$((j+1))
-			fi
-		done
-		ot_elem="$i"
-	fi
-}
-
 loop_cmds() {
 	get_temp
 
@@ -169,7 +136,26 @@ loop_cmds() {
 			if [ "$cur_t" -lt "$mnt" ]; then
 				new_spd="0"; ot_elem="-1"
 			elif [ "$cur_t" -lt "$mxt" ]; then
-				compare_spd
+				i=0
+				for temp in $tc; do
+					if [ "$cur_t" -le "$temp" ]; then
+						break
+					else
+						i=$((i+1))
+					fi
+				done
+				if [ "$i" -ne "$ot_elem" ]; then
+					j=0
+					for speed in $fc; do
+						if [ "$j" -eq "$i" ]; then
+							new_spd="$speed"
+							break
+						else
+							j=$((j+1))
+						fi
+					done
+					ot_elem="$i"
+				fi
 			else
 				new_spd="100"
 			fi
