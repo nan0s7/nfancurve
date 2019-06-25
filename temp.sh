@@ -11,12 +11,12 @@ ot_elem="-1"; sleep_override=""; gpu_cmd="nvidia-settings"
 usage="Usage: $(basename "$0") [OPTION]...
 
 where:
--c  configuration file (default: $PWD/config)
--d  display device string (e.g. \":0\", \"CRT-0\"), defaults to auto detection
--D  run in daemon mode (background process)
+-c  [ARG] configuration file (default: $PWD/config)
+-d  [ARG] display device string (e.g. \":0\", \"CRT-0\"), defaults to auto
+-D  run in daemon mode (background process), using sh
 -h  show this help text
 -l  enable logging to stdout
--s  set the sleep time (in seconds)
+-s  [ARG] set the sleep time (in seconds)
 -v  show the current version of this script"
 
 { \unalias command; \unset -f command; } >/dev/null 2>&1
@@ -62,7 +62,6 @@ prf "
 #          nan0s7's script for automatically managing GPU fan speed            #
 ################################################################################
 "
-
 # FUNCTIONS THAT REQUIRE CERTAIN DEPENDENCIES TO BE MET
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # DEPENDS: PROCPS
