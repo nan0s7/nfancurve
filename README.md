@@ -18,10 +18,10 @@ If you need any help configuring my script or don't know how to make it start au
 - POSIX compliant
 
 ## Prerequisites
-- `bash` version 4 and above, or a POSIX shell with the same syntax (`dash` tested)
+- `bash` version 4 and above, or a POSIX compliant shell (tested with `dash`)
 - `nvidia glx driver` version greater than 304
 - `nvidia-settings` for controlling the GPU(s)
-- `coreutils` for printf, etc.
+- `coreutils`
 - `procps` - you can comment out the function `check_already_running` if you don't have it
 
 ## How to install
@@ -29,7 +29,7 @@ If you need any help configuring my script or don't know how to make it start au
 - Download the .zip file straight from the GitHubs
 - Extract it somewhere, and open a terminal to that directory
 - Make sure `CoolBits` is enabled (see [USAGE.md](USAGE.md))
-- Run `sh temp.sh` (or any compatable shell) or `./temp.sh` for a foreground process. Run with the option `-D` (case sensitive) for a background process (i.e. `./temp.sh -D`). Note that using `sh` or `./` will automatically use your default shell.
+- Run `sh temp.sh` (or any compatable shell) or `./temp.sh` for a foreground process. Run with the option `-D` (case sensitive) for a background process (i.e. `./temp.sh -D`)*. Note that using `sh` or `./` will automatically use your default shell.
 
 ### git
 - Choose a folder you want to download/install the script in
@@ -60,4 +60,3 @@ There are unofficial AUR packages maintained by [@Scrumplex](https://github.com/
 - add nouveau support (once they fix Pascal)
 - add AMD support?
 - make fans controllable without needing to use the `nvidia-settings` app (for headless support)
-- add support for GPU's that have more than one controllable fan (i.e. >1 fan controller)
