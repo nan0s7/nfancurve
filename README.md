@@ -18,7 +18,7 @@ If you need any help configuring my script or don't know how to make it start au
 - POSIX compliant
 
 ## Prerequisites
-- `bash` version 4 and above, or a POSIX compliant shell (tested with `dash`)
+- a POSIX compliant shell; tested with recent versions of `bash` and `dash`
 - `nvidia glx driver` version greater than 304
 - `nvidia-settings` for controlling the GPU(s)
 - `coreutils`
