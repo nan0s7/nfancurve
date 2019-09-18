@@ -1,0 +1,11 @@
+# /etc/systemd/user/nfancurve.service
+
+[Unit]
+Description=Nfancurve service
+PartOf=graphical-session.target
+
+[Service]
+ExecStart=/bin/sh NFANCURVE_PATH/temp.sh
+
+[Install]
+WantedBy=xsession.target
