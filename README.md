@@ -52,6 +52,7 @@ There are unofficial AUR packages maintained by [@Scrumplex](https://github.com/
 - [@xberg](https://github.com/xberg), for finding and fixing a bug with the multi-GPU side of the script
 - [@edave](https://github.com/edave), for helping test the initial implimentation of multi-fan GPU support
 - [@louissmit](https://github.com/louissmit), for helping test the final multi-fan GPU feature implimentation
+- [@D3473R](https://github.com/D3473R), for adding an example systemd service file
 
 ## TODO
 - ~~make sure that "CoolBits" is enabled~~ - _not really the scope of this script_
