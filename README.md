@@ -37,16 +37,25 @@ If you need any help configuring my script or don't know how to make it start au
 - Follow the last two steps under the **GitHub** guide area
 
 ### Arch Linux
-There are unofficial AUR packages maintained by [@Scrumplex](https://github.com/Scrumplex).
+There are unofficial AUR packages, but they're outdated and not maintained by anyone currently.
 - Stable: [nfancurve](https://aur.archlinux.org/packages/nfancurve/)<sup>AUR</sup>
 - Git Master: [nfancurve-git](https://aur.archlinux.org/packages/nfancurve-git/)<sup>AUR</sup>
+
+## Using the systemd service
+Replace NFANCURVE_PATH with the nfancurve path.
+Move or copy the nfancurve.service file to /etc/systemd/user/nfancurve.service then enable and start the service with:
+
+    systemctl --user daemon-reload
+    systemctl --user start nfancurve.service
+    systemctl --user enable nfancurve.service
+
 
 ## Honourable mentions
 - [@aryonoco](https://github.com/aryonoco), for being my multi-GPU guinea pig
 - [@civyshk](https://github.com/civyshk), for making a Python fork
 - [@zJelly](https://github.com/zJelly), for working on an AMD-GPU supporting fork
 - [@dpayne](https://github.com/dpayne), for adding useful script parameters
-- [@Scrumplex](https://github.com/Scrumplex), for adding check to avoid errors when config is missing, and maintaining the AUR package
+- [@Scrumplex](https://github.com/Scrumplex), for adding check to avoid errors when config is missing, and initialising the AUR packages
 - [@stefmitropoulos](https://github.com/stefmitropoulos), for greatly improving the way config files are loaded
 - [@mklement0](https://stackoverflow.com/users/45375/mklement0), (stackoverflow) for a [POSIX implimentation](https://stackoverflow.com/questions/29832037/how-to-get-script-directory-in-posix-sh) of resolving file symlinks
 - [@xberg](https://github.com/xberg), for finding and fixing a bug with the multi-GPU side of the script
