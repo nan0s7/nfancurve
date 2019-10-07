@@ -1,7 +1,6 @@
 #!/bin/sh
 
 prf() { printf %s\\n "$*" ; }
-
 z=$0; display=""; CDPATH=""; fname=""; num_gpus="0"; num_fans="0"; debug="0"
 max_t="0"; max_t2="0"; mnt="0"; mxt="0"; ot="0"; tdiff="0"; cur_t="0"
 new_spd="0"; cur_spd="0"; old_t="200"; check_diff1="0"; check_diff2="0"
@@ -41,19 +40,15 @@ conf_file=$(dirname -- "$conf_file")"/config"
 while getopts ":c: :d: :D :h :l :s: :v :x" opt; do
 	if [ "$opt" = "c" ]; then conf_file="$OPTARG"
 	elif [ "$opt" = "d" ]; then display="-c $OPTARG"
-	elif [ "$opt" = "D" ]; then
-		nohup sh temp.sh >/dev/null 2>&1 &
+	elif [ "$opt" = "D" ]; then nohup sh temp.sh >/dev/null 2>&1 &
 		exit 1
 	elif [ "$opt" = "h" ]; then prf "$usage"; exit 0
 	elif [ "$opt" = "l" ]; then debug="1"
 	elif [ "$opt" = "s" ]; then sleep_override="$OPTARG"
 	elif [ "$opt" = "v" ]; then prf "Version 18"; exit 0
-	elif [ "$opt" = "x" ]; then
-		gpu_cmd="../nssim/nssim nvidia-settings"
-	elif [ "$opt" = ":" ]; then
-		prf "Option -$OPTARG requires an argument"
-	else
-		prf "Invalid option: -$OPTARG"; exit 1
+	elif [ "$opt" = "x" ]; then gpu_cmd="../nssim/nssim nvidia-settings"
+	elif [ "$opt" = ":" ]; then prf "Option -$OPTARG requires an argument"
+	else prf "Invalid option: -$OPTARG"; exit 1
 	fi
 done
 
@@ -76,11 +71,9 @@ kill_already_running() {
 get_temp() {
 	cur_t="$($gpu_cmd -q=[gpu:"$gpu"]/GPUCoreTemp -t $display)"
 }
-
 get_query() {
 	prf "$($gpu_cmd -q "$1" $display)"
 }
-
 set_fan_control() {
 	i=0
 	while [ "$i" -le "$1" ]; do
@@ -88,11 +81,9 @@ set_fan_control() {
 		i=$((i+1))
 	done
 }
-
 set_speed() {
 	$gpu_cmd -a [fan:"$fan"]/GPUTargetFanSpeed="$cur_spd" $display
 }
-
 finish() {
 	set_fan_control "$num_gpus_loop" "0"
 	prf "Fan control set back to auto mode"; exit 0
@@ -103,14 +94,12 @@ echo_info() {
 	e="$e nsp=$new_spd osp=$cur_spd maxt=$mxt mint=$mnt otl=$otl"
 	prf "$e"
 }
-
 arr_size() {
 	arr_len=0
 	for element in $arr; do
 		arr_len=$((arr_len+1))
 	done
 }
-
 re_elem() {
 	i=0
 	for elem in $arr; do
@@ -121,10 +110,8 @@ re_elem() {
 		fi
 	done
 }
-
 loop_cmds() {
 	get_temp
-
 	if [ "$cur_t" -ne "$ot" ]; then
 		# Calculate difference and make sure it's positive
 		if [ "$cur_t" -le "$ot" ]; then
@@ -132,7 +119,6 @@ loop_cmds() {
 		else
 			tdiff="$((cur_t-ot))"
 		fi
-
 		if [ "$tdiff" -ge "$chd" ]; then
 			if [ "$cur_t" -lt "$mnt" ]; then
 				new_spd="0"; otl="-1"
@@ -168,9 +154,21 @@ loop_cmds() {
 			tdiff="0"
 		fi
 	fi
-
 	if [ "$debug" -eq "1" ]; then
 		echo_info
+	fi
+}
+set_stuff() {
+	arr="$fan2gpu"; n="$fan"; re_elem; gpu="$elem"
+	arr="$which_curve"; n="$fan"; re_elem; tmp="$elem"
+	if [ "$tmp" -eq "1" ]; then
+		chd="$check_diff1"
+		mnt="$min_t"; mxt="$max_t"
+		tc="$tcurve"; fc="$fcurve"
+	else
+		chd="$check_diff2"
+		mnt="$min_t2"; mxt="$max_t2"
+		tc="$tcurve2"; fc="$fcurve2"
 	fi
 }
 
@@ -214,7 +212,7 @@ arr="$fcurve2"; arr_size; fcurve_len2="$((arr_len-1))"
 num_fans=$(get_query "fans"); num_fans="${num_fans%* Fan on*}"
 if [ -z "$num_fans" ]; then
 	prf "No Fans detected"; exit 1
-elif [ "${#num_fans}" -gt "2" ]; then #=======================================
+elif [ "${#num_fans}" -gt "2" ]; then
 	num_fans="${num_fans%* Fans on*}"
 else
 	prf "Number of Fans detected:"$num_fans
@@ -222,7 +220,7 @@ fi
 num_gpus=$(get_query "gpus"); num_gpus="${num_gpus%* GPU on*}"
 if [ -z "$num_gpus" ]; then
 	prf "No GPUs detected"; exit 1
-elif [ "${#num_gpus}" -gt "2" ]; then #=======================================
+elif [ "${#num_gpus}" -gt "2" ]; then
 	num_gpus="${num_gpus%* GPUs on*}"
 else
 	num_gpus_loop="$((num_gpus-1))"; num_fans_loop="$((num_fans-1))"
@@ -231,8 +229,7 @@ fi
 
 i=0
 while [ "$i" -le "$num_fans_loop" ]; do
-	old_t="$old_t 0"
-	i=$((i+1))
+	old_t="$old_t 0"; i=$((i+1))
 done
 
 if [ "$force_check" -eq "0" ]; then
@@ -257,22 +254,6 @@ else
 fi
 
 set_fan_control "$num_gpus_loop" "1"
-
-set_stuff() {
-	arr="$fan2gpu"; n="$fan"; re_elem; gpu="$elem"
-	arr="$which_curve"; n="$fan"; re_elem; tmp="$elem"
-	i=0
-
-	if [ "$tmp" -eq "1" ]; then
-		chd="$check_diff1"
-		mnt="$min_t"; mxt="$max_t"
-		tc="$tcurve"; fc="$fcurve"
-	else
-		chd="$check_diff2"
-		mnt="$min_t2"; mxt="$max_t2"
-		tc="$tcurve2"; fc="$fcurve2"
-	fi
-}
 
 if [ "$num_gpus" -eq "1" ] && [ "$num_fans" -eq "1" ]; then
 	prf "Started process for 1 GPU and 1 Fan"
