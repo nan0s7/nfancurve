@@ -37,9 +37,9 @@ If you need any help configuring my script or don't know how to make it start au
 - Follow the last two steps under the **GitHub** guide area
 
 ### Arch Linux
-There are unofficial AUR packages, but they're outdated and not maintained by anyone currently.
-- Stable: [nfancurve](https://aur.archlinux.org/packages/nfancurve/)<sup>AUR</sup>
-- Git Master: [nfancurve-git](https://aur.archlinux.org/packages/nfancurve-git/)<sup>AUR</sup>
+There are unofficial AUR packages:
+- Stable: [nfancurve](https://aur.archlinux.org/packages/nfancurve/)<sup>AUR</sup>, maintained by [@ReneHollander](https://github.com/ReneHollander)
+- Git Master: [nfancurve-git](https://aur.archlinux.org/packages/nfancurve-git/)<sup>AUR</sup>, outdated and unmaintained
 
 ## Using the systemd service
 Replace NFANCURVE_PATH with the nfancurve path.
