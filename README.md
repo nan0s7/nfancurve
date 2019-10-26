@@ -2,7 +2,7 @@ nfancurve
 ---------
 You are probably wondering why I have chosen to write this script in ~~Bash~~ Shell Script. The reason is very simple; I wanted a script with the minimum number of dependencies possible. To get this script up-and-running you _technically_ only need the `temp.sh` file, and the `config` file.
 
-The current version of the script is **version 19**.
+The current version of the script is **version 19.1**.
 
 This script is currently set up for Celsius. However, it can easily be modified for other temperature scales.
 
@@ -62,6 +62,7 @@ Move or copy the nfancurve.service file to /etc/systemd/user/nfancurve.service t
 - [@edave](https://github.com/edave), for helping test the initial implimentation of multi-fan GPU support
 - [@louissmit](https://github.com/louissmit), for helping test the final multi-fan GPU feature implimentation
 - [@D3473R](https://github.com/D3473R), for adding an example systemd service file
+- [@ReneHollander](https://github.com/ReneHollander), for maintaining and improving the stable AUR package
 
 ## TODO
 - ~~make sure that "CoolBits" is enabled~~ - _not really the scope of this script_
