@@ -220,7 +220,7 @@ arr="$fcurve"; arr_size; fcurve_len="$((arr_len-1))"
 arr="$fcurve2"; arr_size; fcurve_len2="$((arr_len-1))"
 
 # Get the system's GPU configuration
-num_fans=$(get_query "fans"); num_fans="${num_fans%* Fan on*}"
+num_fans=$(get_query "fans"); num_fans="${num_fans%* Fans on*}"
 if [ -z "$num_fans" ]; then
 	prf "No Fans detected"; exit 1
 elif [ "${#num_fans}" -gt "2" ]; then
@@ -228,7 +228,7 @@ elif [ "${#num_fans}" -gt "2" ]; then
 else
 	prf "Number of Fans detected: $num_fans"
 fi
-num_gpus=$(get_query "gpus"); num_gpus="${num_gpus%* GPU on*}"
+num_gpus=$(get_query "gpus"); num_gpus="${num_gpus%* GPUs on*}"
 if [ -z "$num_gpus" ]; then
 	prf "No GPUs detected"; exit 1
 elif [ "${#num_gpus}" -gt "2" ]; then
