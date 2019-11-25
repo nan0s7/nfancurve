@@ -225,18 +225,16 @@ if [ -z "$num_fans" ]; then
 	prf "No Fans detected"; exit 1
 elif [ "${#num_fans}" -gt "2" ]; then
 	num_fans="${num_fans%* Fans on*}"
-else
-	prf "Number of Fans detected: $num_fans"
 fi
+prf "Number of Fans detected: $num_fans"
 num_gpus=$(get_query "gpus"); num_gpus="${num_gpus%* GPU on*}"
 if [ -z "$num_gpus" ]; then
 	prf "No GPUs detected"; exit 1
 elif [ "${#num_gpus}" -gt "2" ]; then
 	num_gpus="${num_gpus%* GPUs on*}"
-else
 	num_gpus_loop="$((num_gpus-1))"; num_fans_loop="$((num_fans-1))"
-	prf "Number of GPUs detected: $num_gpus"
 fi
+prf "Number of GPUs detected: $num_gpus"
 
 i=0
 while [ "$i" -lt "$num_fans_loop" ]; do
