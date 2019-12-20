@@ -1,11 +1,10 @@
-# /etc/systemd/user/nfancurve.service
-
 [Unit]
 Description=Nfancurve service
-PartOf=graphical-session.target
+After=graphical-session.target
+Requires=graphical-session.target
 
 [Service]
-ExecStart=/bin/sh NFANCURVE_PATH/temp.sh
+ExecStart=/bin/sh /usr/bin/nfancurve -c /etc/nfancurve.conf
 
 [Install]
-WantedBy=xsession.target
+WantedBy=graphical-session.target
