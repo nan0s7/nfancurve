@@ -64,6 +64,7 @@ Move or copy the nfancurve.service file to /etc/systemd/user/nfancurve.service t
 - [@D3473R](https://github.com/D3473R), for adding an example systemd service file
 - [@ReneHollander](https://github.com/ReneHollander), for maintaining and improving the stable AUR package
 - [@kenbeese](https://github.com/kenbeese), for making me aware of a multi-GPU bug
+- [@BryanHitchcock](https://github.com/BryanHitchcock), for fixing an issue with single GPU, multi-fan configurations
 
 ## TODO
 - ~~make sure that "CoolBits" is enabled~~ - _not really the scope of this script_
