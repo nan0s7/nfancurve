@@ -142,6 +142,7 @@ loop_cmds() {
 			if [ "$new_spd" -ne "$cur_spd" ]; then
 				cur_spd="$new_spd"
 				set_speed
+				i=0
 				tmp="$old_s"; old_s=""
 				for elem in $tmp; do
 					if [ "$i" -ne "$fan" ]; then
