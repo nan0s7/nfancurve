@@ -5,6 +5,7 @@ Requires=graphical-session.target
 
 [Service]
 ExecStart=/bin/sh /usr/bin/nfancurve -c /etc/nfancurve.conf
+KillSignal=SIGINT
 
 [Install]
 WantedBy=graphical-session.target
