@@ -126,9 +126,9 @@ loop_cmds() {
 			elif [ "$cur_t" -lt "$mxt" ]; then
 				tl=0
 				for arr_t in $tc; do
-					if [ "$cur_t" -le "$arr_t" ]; then
+					if [ "$cur_t" -le "$((arr_t-2))" ]; then
 						break
-					else
+					elif [ "$cur_t" -ge "$arr_t" ]; then
 						tl=$((tl+1))
 					fi
 				done
