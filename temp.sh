@@ -113,6 +113,9 @@ re_elem() {
 }
 loop_cmds() {
 	get_temp
+	case ${cur_t#-} in
+		''|*[!0-9]*) cur_t=$ot ;;
+	esac
 	if [ "$cur_t" -ne "$ot" ]; then
 		# Calculate difference and make sure it's positive
 		if [ "$cur_t" -le "$ot" ]; then
