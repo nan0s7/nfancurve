@@ -5,6 +5,7 @@ After=default.target
 [Service]
 ExecStart=/bin/sh /usr/bin/nfancurve -c /etc/nfancurve.conf
 KillSignal=SIGINT
+Environment=LC_ALL=en_US.UTF-8
 
 [Install]
 WantedBy=default.target
