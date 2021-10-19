@@ -12,7 +12,7 @@ So you want to use my script, huh? Well lucky for you it's pretty easy. But befo
 1. If not... well you're probably looking in the wrong place - sorry... D:
 2. Most Linux distributions have them in the repositories. Go have a look. If you don't know where bash is, it is probably your default Terminal shell anyway. Open your **F**avourite **T**erminal **A**pplication or **E**mulator (**FTAE**) and type `bash --version`. _Please be aware that if you use the 304 or 340 glx driver versions, my script will more than likely not work! (will be fixed someday, I promise)_
 3. See "automating this script" below if you want it always running in the background. If you want to use it whenever you want, you can just run the script by typing "./temp.sh" into your **FTAE** when you're in the directory you've put my script. If you literally just downloaded it it'll be in your Downloads folder... duh!
-4. I'd like to consider my script as being well-commented so if you're game then jump right in by opening my script in your favourite text editor. For **versions 6 through 11**, you may want to have a look at the line that defines the `CURVE` variable; where in the following example, a is the desired temperature you'd like the upper bound to be for changing the fan speed, and b is the fan-speed-percentage you want the fans to be running at: `["a"]="b"`. Also, I've written the script in such a way that you can have as many tempurature and fan-speed-percentage pairs as you like; just make sure they're all seperated by a space. For **versions 12 through 14** I've split the array into `fcurve` and `tcurve` (fan and temperature respectively) to make things slightly easier. Make sure that the two arrays are of the same length, though. Otherwise everything I said before still applies. For **version 15** I've made a seperate config file called _config.txt_ that contains all the editable variables. For **versions 16** I adjusted the structure and renamed config.txt to _config.sh_ to make it easier and neater. Any **versions greater than 16** have the _config.sh_ file renamed just to _config_.
+4. I'd like to consider my script as being well-commented so if you're game then jump right in by opening my script in your favourite text editor. For **versions 6 through 11**, you may want to have a look at the line that defines the `CURVE` variable; where in the following example, a is the desired temperature you'd like the upper bound to be for changing the fan speed, and b is the fan-speed-percentage you want the fans to be running at: `["a"]="b"`. Also, I've written the script in such a way that you can have as many temperature and fan-speed-percentage pairs as you like; just make sure they're all seperated by a space. For **versions 12 through 14** I've split the array into `fcurve` and `tcurve` (fan and temperature respectively) to make things slightly easier. Make sure that the two arrays are of the same length, though. Otherwise everything I said before still applies. For **version 15** I've made a seperate config file called _config.txt_ that contains all the editable variables. For **versions 16** I adjusted the structure and renamed config.txt to _config.sh_ to make it easier and neater. Any **versions greater than 16** have the _config.sh_ file renamed just to _config_.
 
 ## automating this script
 You're going to have to make a .desktop file (copy the code below). Also, place my script (temp.sh) somewhere safe but somewhere that you know where it is and makes sense. I usually put it somewhere in my home folder.
@@ -61,6 +61,20 @@ EndSection
 ```
 
 And don't forget to change your `Identifier`!
+
+On an Ubuntu 20.04 fresh installation, the file is called `10-nvidia.conf` and located at `/usr/share/X11/xorg.conf.d` that can be updated as:
+
+```
+Section "OutputClass"
+    Identifier "nvidia"
+    MatchDriver "nvidia-drm"
+    Driver "nvidia"
+    Option "AllowEmptyInitialConfiguration"
+    Option "Coolbits" "1"
+    ModulePath "/usr/lib/x86_64-linux-gnu/nvidia/xorg"
+EndSection
+```
+A reboot makes the changes permanent and nfancurve will take over your NVIDIA GPU's fan controls based on your assigned settings.
 
 This file will make sure `Coolbits` is enabled each time your system generates a new `xorg.conf` file, which is usually whenever you update your graphics drivers (as Nvidia likes to do this).
 
