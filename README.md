@@ -42,7 +42,7 @@ There are unofficial AUR packages:
 - Git Master: [nfancurve-git](https://aur.archlinux.org/packages/nfancurve-git/)<sup>AUR</sup>, outdated and unmaintained
 
 ## Using the systemd service
-Replace NFANCURVE_PATH with the nfancurve path.
+Ensure the script and the config paths are correct.
 Move or copy the nfancurve.service file to /etc/systemd/user/nfancurve.service then enable and start the service with:
 
     systemctl --user daemon-reload
