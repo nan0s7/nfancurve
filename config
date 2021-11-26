@@ -3,11 +3,11 @@
 #  first speed in fcurve is (default of 25%)
 # min_t2 is only used with the second fan speed and temperature arrays, so
 #  there is no need to change it unless you're using the second curve
-min_t="0"
-min_t2="0"
+min_t="25"
+min_t2="25"
 
 # How many seconds the script should wait until checking for a change in temps
-sleep_time="3"
+sleep_time="7"
 
 # By default it's set up so that when the temp is less than or equal to 35
 #  degrees, the fan speed will be set to 25%. Next, if the temp is between 36
@@ -22,12 +22,12 @@ tcurve="35 45 55 65 75" # temperatures
 
 
 #defines if equation-mode is being used. If equation_mode is on, the script will calculate the correct fan speed from the defined equation instead of using fcurve and tcurve, thus achieving a smoother fan-curve
-equation_mode="1"
+equation_mode="0"
 
 # the equation for the primary fan (used if equation_mode is 1)if equation_mode is 1 the script will set the fan speed to the corresponding value of the equation in quotation marks ($cur_t represents the current temperature)
 #example:
 #equation1='9.6533531762886*1.0305283856818^$cur_t'
-equation1='18.3138081180607*1.0160111895552^$cur_t'
+equation1=
 
 # if equation_mode is 1, this is the temperature at which 100% fan speed will be set
 equation_max="90"
@@ -39,7 +39,7 @@ equation_max="90"
 force_check="0"
 
 #if this value is one, if the temperature is decreasing the script will lower the fan speed smoothly 1% at every temperature check, instead of directly switching to the corresponding value in fcurve or the equation
-smooth_decrease="1"
+smooth_decrease="0"
 
 # defines the minium setpoint the fan-speed will decrease to 
 smooth_decrease_setpoint="30"
@@ -52,7 +52,7 @@ tcurve2="35 45 55 65 75"
 # the equation for the secondary fan (used if equation_mode is 1)
 #example:
 #equation2='9.6533531762886*1.0305283856818^$cur_t'
-equation2='18.3138081180607*1.0160111895552^$cur_t'
+equation2=
 
 # First number in array is fan 0, second number is fan 1, etc. If the number
 #  is 1, that indicates that the script should use the first curve for that
