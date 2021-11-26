@@ -42,7 +42,7 @@ There are unofficial AUR packages:
 - Git Master: [nfancurve-git](https://aur.archlinux.org/packages/nfancurve-git/)<sup>AUR</sup>, outdated and unmaintained
 
 ## Using the systemd service
-Replace NFANCURVE_PATH with the nfancurve path.
+Ensure the script and the config paths are correct.
 Move or copy the nfancurve.service file to /etc/systemd/user/nfancurve.service then enable and start the service with:
 
     systemctl --user daemon-reload
@@ -66,6 +66,7 @@ Move or copy the nfancurve.service file to /etc/systemd/user/nfancurve.service t
 - [@kenbeese](https://github.com/kenbeese), for making me aware of a multi-GPU bug
 - [@BryanHitchcock](https://github.com/BryanHitchcock), for fixing an issue with single GPU, multi-fan configurations
 - [@mooninite](https://github.com/mooninite), for fixing a couple of bugs
+- [@Wout12345](https://github.com/Wout12345) and [@frederikstroem](https://github.com/frederikstroem), for improving the service file
 
 ## TODO
 - ~~make sure that "CoolBits" is enabled~~ - _not really the scope of this script_

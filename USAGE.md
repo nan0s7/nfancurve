@@ -21,8 +21,6 @@ So if you put my script in your home folder, and lets say your user name/account
 - `Path=/home/foo/`
 - `Exec=/home/foo/temp.sh`
 
-If you wish the script to automatically update itself upon each boot, replace **temp.sh** with **update.sh** in your .desktop file. The script will still run in the background as usual.
-
 If your user name/account name is not "foo" then you can change that to what it actually is.
 
 Now the .desktop file should now read as follows:
@@ -34,9 +32,9 @@ Path=/home/foo/
 Exec=/home/foo/temp.sh
 ```
 
-Now you've got to move the .desktop file (it may have re-named itself to "nan0s7's fan curve script") to a folder where it'll be automatically started. I'm currently running Solus OS which is based off of the Gnome Desktop currently, so I can place the .desktop in the /home/foo/.config/autostart/ folder (replacing foo with your user name of course... unless that is your user name). 
+Now you've got to move the .desktop file (it may have re-named itself to "nan0s7's fan curve script") to a folder where it'll be automatically started. In some Ubuntu based distributions, you can place .desktop in the /home/foo/.config/autostart/ folder (replacing foo with your user name of course... unless that is your user name). 
 
-Then all I have to do is open up the good 'ol Gnome Tweak Tool, and make sure that my .desktop file shows up in the autostart section (again it may be called "nan0s7's fan curve script"). 
+Some distributions have a tool where you have to enable new applications to be autostarted, such as the Gnome Tweak Tool.
 
 If you don't know how to set programs to autostart in your distribution of choice, just google how to and apply those instructions to my .desktop file. It usually isn't too difficult.
 
