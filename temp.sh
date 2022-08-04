@@ -113,53 +113,28 @@ re_elem() {
 }
 loop_cmds() {
 	get_temp
-	case ${cur_t#-} in
-		''|*[!0-9]*) cur_t=$ot ;;
-	esac
 	if [ "$cur_t" -ne "$ot" ]; then
 		# Calculate difference and make sure it's positive
 		if [ "$cur_t" -le "$ot" ]; then
 			tdiff="$((ot-cur_t))"
-			decrease="1"
 		else
 			tdiff="$((cur_t-ot))"
-			decrease="0"
 		fi
-		if [ "$tdiff" -ge "$chd" ] || [ "$equation_mode" -eq "1" ] || [ "$smooth_decrease" -eq "1" ]; then		# if the temperature difference is big enough or equation-mode is active
+		if [ "$tdiff" -ge "$chd" ]; then
 			if [ "$cur_t" -lt "$mnt" ]; then
 				new_spd="0"; otl="-1"
 			elif [ "$cur_t" -lt "$mxt" ]; then
 				tl=0
 				for arr_t in $tc; do
-					if [ "$cur_t" -le "$((arr_t-2))" ]; then
+					if [ "$cur_t" -le "$arr_t" ]; then
 						break
-					elif [ "$cur_t" -ge "$arr_t" ]; then
+					else
 						tl=$((tl+1))
 					fi
 				done
 				if [ "$tl" -ne "$otl" ]; then
 					arr="$fc"; n="$tl"; re_elem
 					new_spd="$elem"; otl="$tl"
-				fi
-				if [[ "$equation_mode" -eq "1" ]]; then							# if equation-mode is on
-					eval equationWithTemp=$equation
-					fanSpeed=$(printf "%.0f" $(bc <<< $equationWithTemp))		# calculate the needed fan speed and round to integer
-					if [[ "$fanSpeed" -lt "100" && "$fanSpeed" -gt "0" ]]; then	# check if calculated fan speed is between 0 and 100
-						new_spd=$fanSpeed
-					fi
-				fi
-				if [[ "$smooth_decrease" -eq "1" ]]; then					# if smooth-decrease is on
-					if [ "$decrease" -eq "1" ]; then     					# and temperature is decreasing
-						if [ -z "$speedToDeclineFrom" ]; then				# if speedToDeclineFrom is empty (e.g. in the first cycle of the script)
-							speedToDeclineFrom="$new_spd"
-						fi
-						if [[ "$speedToDeclineFrom" -gt "$smooth_decrease_setpoint" && "$speedToDeclineFrom" -gt "0" ]]; then		# if current fan speed is greater than setpoint
-							speedToDeclineFrom=$((speedToDeclineFrom-1))	# decrease the fan-speed
-						fi
-						new_spd="$speedToDeclineFrom"
-					else
-						speedToDeclineFrom="$new_spd"						# if temperature is not decreasing, update the value for next cycle
-					fi
 				fi
 			else
 				new_spd="100"
@@ -202,16 +177,10 @@ set_stuff() {
 		chd="$check_diff1"
 		mnt="$min_t"; mxt="$max_t"
 		tc="$tcurve"; fc="$fcurve"
-		equation=$equation1			# for fan1
 	else
 		chd="$check_diff2"
 		mnt="$min_t2"; mxt="$max_t2"
 		tc="$tcurve2"; fc="$fcurve2"
-		equation=$equation2			# for fan2
-	fi
-	# check if equation_mode is being used
-	if [[ "$equation_mode" == "1" ]]; then
-		mxt=$equation_max	# set the maximum temp, as tcurve is not being used in this case
 	fi
 }
 
@@ -243,30 +212,6 @@ fi
 arr="$tcurve2"; n="0"; re_elem
 if [ "$min_t2" -ge "$elem" ]; then
 	prf "min_t2 is greater than the first value in the tcurve2!"; exit 1
-fi
-if [[ -z "$equation_mode" ]]; then
-	prf "equation_mode is not set (can be 0 or 1)!"; exit 1
-fi
-if [[ "$equation_mode" == "1" && -z "$equation1" ]]; then
-	prf "equation_mode is on, but equation1 is empty!"; exit 1
-fi
-if [[ "$equation_mode" == "1" && -z "$equation2" ]]; then
-	prf "equation_mode is on, but equation2 is empty!"; exit 1
-fi
-if [[ "$equation_mode" == "1" && -z "$equation_max" ]]; then
-	prf "equation_mode is on, but equation_max is empty!"; exit 1
-fi
-if [[ "$min_t" -ge "$equation_max" ]]; then
-	prf "min_t is greater than equation_max!"; exit 1
-fi
-if [[ -z "$smooth_decrease" ]]; then
-	prf "smooth_decrease is not set (can be 0 or 1)!"; exit 1
-fi
-if [[ "$smooth_decrease" == "1" && -z smooth_decrease_setpoint ]]; then
-	prf "smooth_decrease is on, but smooth_decrease_setpoint is empty!"; exit 1
-fi
-if [[ "$smooth_decrease_setpoint" -gt "100" ]] || [[ "$smooth_decrease_setpoint" -lt "0" ]]; then
-	prf "smooth_decrease_setpoint is out of range (can be 0 - 100)!"; exit 1
 fi
 
 # Calculate some more values
