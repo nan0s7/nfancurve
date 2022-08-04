@@ -2,7 +2,7 @@ nfancurve
 ---------
 You are probably wondering why I have chosen to write this script in ~~Bash~~ Shell Script. The reason is very simple; I wanted a script with the minimum number of dependencies possible. To get this script up-and-running you _technically_ only need the `temp.sh` file, and the `config` file.
 
-The current version of the script is **version 19.4**.
+The current version of the script is **version 19.5**.
 
 This script is currently set up for Celsius. However, it can easily be modified for other temperature scales.
 
