@@ -19,40 +19,16 @@ sleep_time="7"
 fcurve="25 40 55 70 85" # fan speeds
 tcurve="35 45 55 65 75" # temperatures
 
-
-
-#defines if equation-mode is being used. If equation_mode is on, the script will calculate the correct fan speed from the defined equation instead of using fcurve and tcurve, thus achieving a smoother fan-curve
-equation_mode="0"
-
-# the equation for the primary fan (used if equation_mode is 1)if equation_mode is 1 the script will set the fan speed to the corresponding value of the equation in quotation marks ($cur_t represents the current temperature)
-#example:
-#equation1='9.6533531762886*1.0305283856818^$cur_t'
-equation1=
-
-# if equation_mode is 1, this is the temperature at which 100% fan speed will be set
-equation_max="90"
-
 # This value is used to determine the temperature difference needed to get
 #  the script to check for a new speed to apply. The default of this value
 #  is zero, which means the script will automatically calculate a value
 #  based on the temperature curves supplied below
 force_check="0"
 
-#if this value is one, if the temperature is decreasing the script will lower the fan speed smoothly 1% at every temperature check, instead of directly switching to the corresponding value in fcurve or the equation
-smooth_decrease="0"
-
-# defines the minium setpoint the fan-speed will decrease to 
-smooth_decrease_setpoint="30"
-
 # These two arrays are for GPU's that have a secondary fan that you may wish
 #  to control seperately, especially if it is water-cooled.
 fcurve2="15 30 45 60 75"
 tcurve2="35 45 55 65 75"
-
-# the equation for the secondary fan (used if equation_mode is 1)
-#example:
-#equation2='9.6533531762886*1.0305283856818^$cur_t'
-equation2=
 
 # First number in array is fan 0, second number is fan 1, etc. If the number
 #  is 1, that indicates that the script should use the first curve for that
