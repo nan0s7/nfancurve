@@ -45,7 +45,7 @@ while getopts ":c: :d: :D :h :l :s: :v :x" opt; do
 	elif [ "$opt" = "h" ]; then prf "$usage"; exit 0
 	elif [ "$opt" = "l" ]; then debug="1"
 	elif [ "$opt" = "s" ]; then sleep_override="$OPTARG"
-	elif [ "$opt" = "v" ]; then prf "Version 19.4"; exit 0
+	elif [ "$opt" = "v" ]; then prf "Version 19.5"; exit 0
 	elif [ "$opt" = "x" ]; then gpu_cmd="../nssim/nssim nvidia-settings"
 	elif [ "$opt" = ":" ]; then prf "Option -$OPTARG requires an argument"
 	else prf "Invalid option: -$OPTARG"; exit 1
