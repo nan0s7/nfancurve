@@ -9,6 +9,8 @@ min_t2="25"
 # How many seconds the script should wait until checking for a change in temps
 sleep_time="7"
 
+hyst="2"
+
 # By default it's set up so that when the temp is less than or equal to 35
 #  degrees, the fan speed will be set to 25%. Next, if the temp is between 36
 #  and 45, the fan speed should be set to 40%, etc.
