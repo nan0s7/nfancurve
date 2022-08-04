@@ -5,7 +5,7 @@ z=$0; display=""; CDPATH=""; fname=""; num_gpus="0"; num_fans="0"; debug="0"
 max_t="0"; max_t2="0"; mnt="0"; mxt="0"; ot="0"; tdiff="0"; cur_t="0"
 new_spd="0"; cur_spd="100"; old_t="200"; check_diff1="0"; check_diff2="0"
 fcurve_len="0"; fcurve_len2="0"; num_gpus_loop="0"; num_fans_loop="0"; old_s="100"
-otl="-1"; sleep_override=""; gpu_cmd="nvidia-settings"
+otl="-1"; sleep_override=""; gpu_cmd="nvidia-settings"; hyst="0"
 
 usage="Usage: $(basename "$0") [OPTION]...
 
@@ -126,9 +126,9 @@ loop_cmds() {
 			elif [ "$cur_t" -lt "$mxt" ]; then
 				tl=0
 				for arr_t in $tc; do
-					if [ "$cur_t" -le "$arr_t" ]; then
+					if [ "$cur_t" -le "$((arr_t-hyst))" ]; then
 						break
-					else
+					elif [ "$cur_t" -ge "$arr_t" ]; then
 						tl=$((tl+1))
 					fi
 				done
