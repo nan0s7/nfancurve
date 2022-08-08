@@ -49,6 +49,19 @@ Move or copy the nfancurve.service file to /etc/systemd/user/nfancurve.service t
     systemctl --user start nfancurve.service
     systemctl --user enable nfancurve.service
 
+### Troubleshooting
+Some Distro's which are further behind in updates, or if there's a slight misconfiguration with services, you may encounter issues with the service file.
+
+To work around this, you may change the following lines in the `nfancurve.service` file:
+1. Change `After=graphical-session.target` to `After=default.target`
+2. Remove the line `Requires=graphical-session.target`
+3. Change `WantedBy=graphical-session.target` to `WantedBy=default.target`
+4. Under the `[Service]` heading, add the line `ExecStartPre=/bin/sleep 20`
+
+Don't forget to reload and reenable the service:
+
+    systemctl --user daemon-reload
+    systemctl reenable --user nfancurve
 
 ## Honourable mentions
 - [@aryonoco](https://github.com/aryonoco), for being my multi-GPU guinea pig
