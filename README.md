@@ -61,7 +61,7 @@ To work around this, you may change the following lines in the `nfancurve.servic
 Don't forget to reload and reenable the service:
 
     systemctl --user daemon-reload
-    systemctl reenable --user nfancurve
+    systemctl reenable --user nfancurve.service
 
 ## Honourable mentions
 - [@aryonoco](https://github.com/aryonoco), for being my multi-GPU guinea pig
