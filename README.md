@@ -50,7 +50,7 @@ Move or copy the nfancurve.service file to /etc/systemd/user/nfancurve.service t
     systemctl --user enable nfancurve.service
 
 ### Troubleshooting
-Some Distro's which are further behind in updates, or if there's a slight misconfiguration with services, you may encounter issues with the service file.
+On some Distro's which are further behind in updates, or if there's a slight misconfiguration with services, you may encounter issues with the service file.
 
 To work around this, you may change the following lines in the `nfancurve.service` file:
 1. Change `After=graphical-session.target` to `After=default.target`
