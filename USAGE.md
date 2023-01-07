@@ -68,7 +68,7 @@ Section "OutputClass"
     MatchDriver "nvidia-drm"
     Driver "nvidia"
     Option "AllowEmptyInitialConfiguration"
-    Option "Coolbits" "1"
+    Option "Coolbits" "12"
     ModulePath "/usr/lib/x86_64-linux-gnu/nvidia/xorg"
 EndSection
 ```
