@@ -46,8 +46,7 @@ Ensure the script and the config paths are correct.
 Move or copy the nfancurve.service file to /etc/systemd/user/nfancurve.service then enable and start the service with:
 
     systemctl --user daemon-reload
-    systemctl --user start nfancurve.service
-    systemctl --user enable nfancurve.service
+    systemctl --user enable --now nfancurve.service
 
 ### Troubleshooting
 On some Distro's which are further behind in updates, or if there's a slight misconfiguration with services, you may encounter issues with the service file.
