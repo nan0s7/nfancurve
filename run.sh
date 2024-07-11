@@ -140,15 +140,6 @@ loop_cmds() {
 				new_spd="100"
 			fi
       if [ "$new_spd" -ne "$cur_spd" ]; then
-        if [ "$hardware_zero_fan" -eq "1" ]; then
-          if [ "$new_spd" -eq "0" ]; then
-            set_fan_control "$num_gpus_loop" "0"
-            prf "Disabling GPU fan speed control since we can't set 0."
-          else
-            set_fan_control "$num_gpus_loop" "1"
-            prf "Re-enabling GPU fan speed control."
-          fi
-        fi
 				cur_spd="$new_spd"
 				set_speed
 				i=0
@@ -161,6 +152,15 @@ loop_cmds() {
 					fi
 					i=$((i+1))
 				done
+        if [ "$hardware_zero_fan" -eq "1" ]; then
+          if [ "$new_spd" -eq "0" ]; then
+            set_fan_control "$num_gpus_loop" "0"
+            prf "Disabling GPU fan speed control since we can't set 0."
+          else
+            set_fan_control "$num_gpus_loop" "1"
+            prf "Re-enabling GPU fan speed control."
+          fi
+        fi
 			fi
 			i=0
 			tmp="$old_t"; old_t=""
