@@ -1,3 +1,39 @@
+# SPECIFICALLY FOR UBUNTU 22.04
+
+0. Copy `temp.sh` and `config` somewhere, enable executable permissions for temp.sh.
+
+1. Setup [xorg config](https://askubuntu.com/questions/1293290/setting-the-coolbits-in-20-04-without-blowing-x):
+    ```sh
+    sudo nvidia-xconfig -a --cool-bits=16 --allow-empty-initial-configuration
+    ```
+2. Enable root for X11(?), make the file `/etc/X11/Xwrapper.config`:
+    ```sh
+    allowed_users=anybody
+    needs_root_rights=yes
+    ```
+    Make it have the right permissions:
+    ```sh
+    chmod 2644 /etc/X11/Xwrapper.config
+    ```
+3. Setup a systemd file, notice `User` parameter:
+    ```sh
+    [Unit]
+    Description=GPU Fan Control
+    After=graphical-session.target
+
+    [Service]
+    User=jet
+    ExecStart=/bin/sh /home/jet/System/nfancurve/run.sh -c /home/jet/System/nfancurve/nfancurve.conf -d :0
+    KillSignal=SIGINT
+    Environment="DISPLAY=:0"
+    Environment="XAUTHORITY=/run/user/1000/gdm/Xauthority"
+    Restart=always
+    RestartSec=30s
+
+    [Install]
+    WantedBy=graphical-session.target
+    ```
+
 nfancurve
 ---------
 You are probably wondering why I have chosen to write this script in ~~Bash~~ Shell Script. The reason is very simple; I wanted a script with the minimum number of dependencies possible. To get this script up-and-running you _technically_ only need the `temp.sh` file, and the `config` file.
