@@ -28,7 +28,7 @@ tcurve="35 45 55 65 75" # temperatures
 force_check="0"
 
 # These two arrays are for GPU's that have a secondary fan that you may wish
-#  to control seperately, especially if it is water-cooled.
+#  to control separately, especially if it is water-cooled.
 fcurve2="15 30 45 60 75"
 tcurve2="35 45 55 65 75"
 
@@ -46,3 +46,8 @@ default_fan="0"
 #  has which fan. i.e. element 0 in the array being set to 0 means that fan 0
 #  is assigned to GPU 0, element 1 is 0 too, meaning fan 1 is on GPU 0 as well
 fan2gpu="0 0 1 1"
+
+# On some GPUs, setting 0% fan speed doesn't necessarily mean the fans spin down.
+#  Changing this to "1" means that fan speed control is disabled when 0 fan speed
+#  is commanded. Potentially allowing fan speeds to be set to 0.
+hardware_zero_fan="0"
