@@ -4,7 +4,7 @@ After=graphical-session.target
 
 [Service]
 User=jet
-ExecStart=/bin/sh /home/jet/System/nfancurve/temp.sh -c /home/jet/System/nfancurve/nfancurve.conf -d :0
+ExecStart=/bin/sh /home/jet/System/nfancurve/temp.sh -c /home/jet/System/nfancurve/arctic-linx.conf -d :0
 KillSignal=SIGINT
 Environment="DISPLAY=:0"
 Environment="XAUTHORITY=/run/user/1000/gdm/Xauthority"
