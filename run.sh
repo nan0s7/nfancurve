@@ -153,7 +153,7 @@ loop_cmds() {
 					i=$((i+1))
 				done
         if [ "$hardware_zero_fan" -eq "1" ]; then
-          if [ "$new_spd" -eq "0" ]; then
+          if [ "$new_spd" -le "5" ]; then
             set_fan_control "$num_gpus_loop" "0"
             prf "Disabling GPU fan speed control since we can't set 0."
           else
