@@ -1,15 +1,11 @@
 [Unit]
-Description=GPU Fan Control
+Description=Nfancurve service
 After=graphical-session.target
+Requires=graphical-session.target
 
 [Service]
-User=jet
-ExecStart=/bin/sh /home/jet/System/nfancurve/temp.sh -c /home/jet/System/nfancurve/arctic-linx.conf -d :0
+ExecStart=/usr/bin/nfancurve -c /etc/nfancurve.conf
 KillSignal=SIGINT
-Environment="DISPLAY=:0"
-Environment="XAUTHORITY=/run/user/1000/gdm/Xauthority"
-Restart=always
-RestartSec=30s
 
 [Install]
 WantedBy=graphical-session.target
